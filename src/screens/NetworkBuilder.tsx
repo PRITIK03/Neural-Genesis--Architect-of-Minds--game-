@@ -136,10 +136,20 @@ const LayerProperties: React.FC<{ layerId: string }> = ({ layerId }) => {
 };
 
 const NetworkBuilder: React.FC = () => {
-  const { layers, selectedLayerId, currentLevelId, isTraining, loss, accuracy, trainingHistory, addLayer, setSelectedLayer, startTraining, stopTraining } = useNetworkStore();
+  const { layers, selectedLayerId, currentLevelId, customPuzzle, isTraining, loss, accuracy, trainingHistory, addLayer, setSelectedLayer, startTraining, stopTraining } = useNetworkStore();
   const setScreen = useAppStore((state) => state.setScreen);
 
-  const level = levels.find(l => l.id === currentLevelId);
+  const level = levels.find(l => l.id === currentLevelId) || null;
+  const puzzleData = level?.puzzleData || (customPuzzle ? {
+    inputShape: customPuzzle.inputShape,
+    outputShape: customPuzzle.outputShape,
+    trainingData: customPuzzle.trainingData,
+    testData: customPuzzle.testData,
+    accuracyThreshold: customPuzzle.accuracyThreshold,
+    maxEpochs: customPuzzle.maxEpochs,
+    maxLayers: customPuzzle.maxLayers,
+    maxNeurons: customPuzzle.maxNeurons,
+  } : null);
 
   const handleAddLayer = (type: Layer['type']) => {
     const newLayer: Layer = {
@@ -226,19 +236,16 @@ const NetworkBuilder: React.FC = () => {
           <pointLight position={[-10, -10, -10]} intensity={0.5} color="purple" />
           <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
           {layers.map((layer, index) => (
-            <motion.mesh
+            <mesh
               key={layer.id}
               position={[0, index * 2 - (layers.length - 1), 0]}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: index * 0.2 }}
             >
               <sphereGeometry args={[0.5 + (layer.config.units || 1) / 20, 16, 16]} />
               <meshStandardMaterial
                 color={layer.type === 'dense' ? 'cyan' : layer.type === 'conv2d' ? 'purple' : 'green'}
                 emissive={isTraining ? 'rgba(0,255,136,0.3)' : 'black'}
               />
-            </motion.mesh>
+            </mesh>
           ))}
         </Canvas>
       </motion.div>
@@ -262,19 +269,20 @@ const NetworkBuilder: React.FC = () => {
         >
           <h3 className="text-lg mb-2">Training</h3>
           {level && <p className="mb-2 text-sm text-text-secondary">{level.name}: {level.description}</p>}
+          {!level && customPuzzle && <p className="mb-2 text-sm text-text-secondary">{customPuzzle.name}: {customPuzzle.description}</p>}
           <motion.button
             onClick={() => {
               if (isTraining) {
                 stopTraining();
-              } else if (level) {
+              } else if (puzzleData) {
                 const trainingData = {
-                  inputs: level.puzzleData.trainingData.map(d => d.input),
-                  outputs: level.puzzleData.trainingData.map(d => d.output),
+                  inputs: puzzleData.trainingData.map(d => d.input),
+                  outputs: puzzleData.trainingData.map(d => d.output),
                 };
-                startTraining(trainingData, level.puzzleData.maxEpochs || 100);
+                startTraining(trainingData, puzzleData.maxEpochs || 100);
               }
             }}
-            disabled={!level || layers.length === 0}
+            disabled={!puzzleData || layers.length === 0}
             className="w-full bg-neural-green hover:bg-neural-green text-bg-app p-2 rounded-lg disabled:opacity-50 mb-2 transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

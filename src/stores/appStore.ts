@@ -1,6 +1,16 @@
 import { create } from 'zustand';
 
-type Screen = 'mainMenu' | 'campaign' | 'sandbox' | 'daily' | 'settings' | 'network';
+export type Screen =
+  | 'mainMenu'
+  | 'campaign'
+  | 'network'
+  | 'results'
+  | 'sandbox'
+  | 'daily'
+  | 'settings'
+  | 'custom'
+  | 'leaderboard'
+  | 'profile';
 
 interface AppState {
   currentScreen: Screen;

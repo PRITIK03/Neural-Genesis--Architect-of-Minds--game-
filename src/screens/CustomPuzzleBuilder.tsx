@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../stores/appStore';
+import { useNetworkStore } from '../stores/networkStore';
 
 interface CustomPuzzle {
+  id: string;
   name: string;
   description: string;
   inputShape: number[];
@@ -17,7 +19,9 @@ interface CustomPuzzle {
 
 const CustomPuzzleBuilder: React.FC = () => {
   const setScreen = useAppStore((state) => state.setScreen);
+  const setCustomPuzzle = useNetworkStore((state) => state.setCustomPuzzle);
   const [puzzle, setPuzzle] = useState<Partial<CustomPuzzle>>({
+    id: crypto.randomUUID(),
     name: '',
     description: '',
     inputShape: [],
@@ -60,15 +64,32 @@ const CustomPuzzleBuilder: React.FC = () => {
       ...prev,
       trainingData,
       testData,
-      outputShape: [row.slice(inputCols).length],
+      outputShape: [trainingData[0]?.output.length || 1],
     }));
   };
 
   const handleSave = () => {
-    // TODO: Save to localStorage or backend
-    console.log('Saving custom puzzle:', puzzle);
-    // For now, just go back to main menu
-    setScreen('main');
+    const finalized: CustomPuzzle = {
+      id: puzzle.id || crypto.randomUUID(),
+      name: puzzle.name || 'Untitled Puzzle',
+      description: puzzle.description || '',
+      inputShape: puzzle.inputShape?.length ? puzzle.inputShape : [1],
+      outputShape: puzzle.outputShape?.length ? puzzle.outputShape : [1],
+      trainingData: puzzle.trainingData || [],
+      testData: puzzle.testData || [],
+      accuracyThreshold: puzzle.accuracyThreshold ?? 0.8,
+      maxEpochs: puzzle.maxEpochs ?? 100,
+      maxLayers: puzzle.maxLayers ?? 5,
+      maxNeurons: puzzle.maxNeurons ?? 20,
+    };
+
+    const stored = JSON.parse(localStorage.getItem('neuropuzzle-custom-puzzles') || '[]') as CustomPuzzle[];
+    const withoutThis = stored.filter((p) => p.id !== finalized.id);
+    const updated = [finalized, ...withoutThis];
+    localStorage.setItem('neuropuzzle-custom-puzzles', JSON.stringify(updated));
+
+    setCustomPuzzle(finalized);
+    setScreen('network');
   };
 
   return (
@@ -85,7 +106,7 @@ const CustomPuzzleBuilder: React.FC = () => {
         transition={{ delay: 0.2 }}
       >
         <motion.button
-          onClick={() => setScreen('main')}
+          onClick={() => setScreen('mainMenu')}
           className="mb-6 bg-neural-blue hover:bg-neural-blue text-bg-app px-4 py-2 rounded-lg neon-glow transition-all duration-300"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

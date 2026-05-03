@@ -11,10 +11,25 @@ export interface TrainingData {
   outputs: number[][];
 }
 
+export interface CustomPuzzle {
+  id: string;
+  name: string;
+  description: string;
+  inputShape: number[];
+  outputShape: number[];
+  trainingData: { input: number[]; output: number[] }[];
+  testData: { input: number[]; output: number[] }[];
+  accuracyThreshold: number;
+  maxEpochs: number;
+  maxLayers: number;
+  maxNeurons: number;
+}
+
 interface NetworkState {
   layers: Layer[];
   selectedLayerId: string | null;
   currentLevelId: string | null;
+  customPuzzle: CustomPuzzle | null;
   isTraining: boolean;
   loss: number;
   accuracy: number;
@@ -25,6 +40,7 @@ interface NetworkState {
   updateLayer: (id: string, config: Record<string, any>) => void;
   setSelectedLayer: (id: string | null) => void;
   setCurrentLevel: (id: string) => void;
+  setCustomPuzzle: (puzzle: CustomPuzzle | null) => void;
   startTraining: (data: TrainingData, epochs: number) => void;
   stopTraining: () => void;
 }
@@ -33,6 +49,7 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
   layers: [],
   selectedLayerId: null,
   currentLevelId: null,
+  customPuzzle: null,
   isTraining: false,
   loss: 0,
   accuracy: 0,
@@ -46,8 +63,9 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
     })),
   setSelectedLayer: (id) => set({ selectedLayerId: id }),
   setCurrentLevel: (id) => set({ currentLevelId: id }),
+  setCustomPuzzle: (puzzle) => set({ customPuzzle: puzzle, currentLevelId: puzzle ? `custom-${puzzle.id}` : null }),
   startTraining: (data, epochs) => {
-    const { layers } = get();
+    const { layers, customPuzzle } = get();
     if (layers.length === 0) return;
 
     const worker = new Worker(new URL('../workers/trainingWorker.ts', import.meta.url));
@@ -58,6 +76,9 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
       layers,
       data,
       epochs,
+      meta: customPuzzle
+        ? { inputShape: customPuzzle.inputShape, outputShape: customPuzzle.outputShape }
+        : undefined,
     });
 
     worker.onmessage = (e) => {
