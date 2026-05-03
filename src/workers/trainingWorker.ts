@@ -39,17 +39,35 @@ self.onmessage = async (e: MessageEvent<TrainingMessage>) => {
     // Build model
     const model = tf.sequential();
 
-    layers.forEach((layer) => {
+    layers.forEach((layer, index) => {
       if (layer.type === 'dense') {
         model.add(
           tf.layers.dense({
             units: layer.config.units,
             activation: layer.config.activation,
-            inputShape: layer.id === layers[0].id ? [data.inputs[0].length] : undefined,
+            inputShape: index === 0 ? [data.inputs[0].length] : undefined,
+          })
+        );
+      } else if (layer.type === 'conv2d') {
+        const inputShape = index === 0
+          ? layer.config.inputShape || [data.inputs[0].length, 1, 1] // Default for 1D-like data
+          : undefined;
+        model.add(
+          tf.layers.conv2d({
+            filters: layer.config.filters,
+            kernelSize: layer.config.kernelSize,
+            strides: layer.config.strides || 1,
+            activation: layer.config.activation,
+            inputShape,
+          })
+        );
+      } else if (layer.type === 'dropout') {
+        model.add(
+          tf.layers.dropout({
+            rate: layer.config.rate,
           })
         );
       }
-      // Add more layer types later
     });
 
     model.compile({

@@ -1,3 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg-app: #0A0E27;
+  --bg-panel: #111633;
+  --bg-elevated: #1A2040;
+  --border-subtle: #2A2F55;
+  --neural-blue: #00D9FF;
+  --neural-purple: #B800FF;
+  --neural-green: #00FF88;
+  --neural-red: #FF0055;
+  --neural-yellow: #FFD700;
+  --text-primary: #EAECF5;
+  --text-secondary: #8B8FA8;
+  --text-dim: #555977;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.glass {
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+}
+
+.neon-glow {
+  box-shadow: 0 0 20px var(--neural-blue);
+}
+
+.neon-glow-purple {
+  box-shadow: 0 0 20px var(--neural-purple);
+}
