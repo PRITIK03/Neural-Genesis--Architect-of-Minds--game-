@@ -119,7 +119,7 @@ const ProfileAchievements: React.FC = () => {
         transition={{ delay: 0.2 }}
       >
         <motion.button
-          onClick={() => setScreen('main')}
+          onClick={() => setScreen('mainMenu')}
           className="mb-6 bg-neural-blue hover:bg-neural-blue text-bg-app px-4 py-2 rounded-lg neon-glow transition-all duration-300"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

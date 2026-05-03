@@ -99,19 +99,16 @@ const DailyChallenge: React.FC = () => {
           <pointLight position={[-10, -10, -10]} intensity={0.5} color="purple" />
           <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
           {layers.map((layer, index) => (
-            <motion.mesh
+            <mesh
               key={layer.id}
               position={[0, index * 2 - (layers.length - 1), 0]}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: index * 0.2 }}
             >
               <sphereGeometry args={[0.5 + (layer.config.units || 1) / 20, 16, 16]} />
               <meshStandardMaterial
                 color="cyan"
                 emissive={isTraining ? 'rgba(0,255,136,0.3)' : 'black'}
               />
-            </motion.mesh>
+            </mesh>
           ))}
         </Canvas>
       </motion.div>

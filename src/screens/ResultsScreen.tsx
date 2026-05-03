@@ -7,12 +7,15 @@ import levels from '../lib/levels';
 
 const ResultsScreen: React.FC = () => {
   const setScreen = useAppStore((state) => state.setScreen);
-  const { currentLevelId, loss, accuracy, layers } = useNetworkStore();
+  const { currentLevelId, customPuzzle, loss, accuracy, layers } = useNetworkStore();
 
-  const level = levels.find(l => l.id === currentLevelId);
+  const level = levels.find(l => l.id === currentLevelId) || null;
+  const threshold = level?.puzzleData.accuracyThreshold ?? customPuzzle?.accuracyThreshold ?? 0;
+  const title = level?.name ?? customPuzzle?.name ?? 'Puzzle';
+  const description = level?.description ?? customPuzzle?.description ?? '';
 
   useEffect(() => {
-    if (accuracy >= (level?.puzzleData.accuracyThreshold || 0)) {
+    if (accuracy >= threshold) {
       // Trigger confetti celebration
       confetti({
         particleCount: 100,
@@ -34,10 +37,10 @@ const ResultsScreen: React.FC = () => {
       existingScores.push(scoreEntry);
       localStorage.setItem('neuropuzzle-scores', JSON.stringify(existingScores));
     }
-  }, [accuracy, level, currentLevelId, loss, layers]);
+  }, [accuracy, threshold, currentLevelId, loss, layers]);
 
-  const isSuccess = accuracy >= (level?.puzzleData.accuracyThreshold || 0);
-  const stars = isSuccess ? Math.min(3, Math.floor(accuracy * 3 / (level?.puzzleData.accuracyThreshold || 1))) : 0;
+  const isSuccess = accuracy >= threshold;
+  const stars = isSuccess ? Math.min(3, Math.floor((accuracy * 3) / Math.max(threshold, 1e-6))) : 0;
 
   return (
     <motion.div
@@ -67,8 +70,8 @@ const ResultsScreen: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
         >
-          <h2 className="text-2xl font-semibold text-neural-blue mb-2">{level?.name}</h2>
-          <p className="text-text-secondary">{level?.description}</p>
+          <h2 className="text-2xl font-semibold text-neural-blue mb-2">{title}</h2>
+          <p className="text-text-secondary">{description}</p>
         </motion.div>
 
         <motion.div
@@ -81,7 +84,7 @@ const ResultsScreen: React.FC = () => {
             <h3 className="text-lg font-semibold text-neural-purple mb-2">Performance</h3>
             <p className="text-sm text-text-secondary">Accuracy: <span className="text-neural-green font-bold">{accuracy.toFixed(4)}</span></p>
             <p className="text-sm text-text-secondary">Loss: <span className="text-neural-red font-bold">{loss.toFixed(4)}</span></p>
-            <p className="text-sm text-text-secondary">Threshold: <span className="font-bold">{level?.puzzleData.accuracyThreshold || 0}</span></p>
+            <p className="text-sm text-text-secondary">Threshold: <span className="font-bold">{threshold}</span></p>
           </div>
           <div className="glass p-4 rounded-lg">
             <h3 className="text-lg font-semibold text-neural-purple mb-2">Network Stats</h3>
