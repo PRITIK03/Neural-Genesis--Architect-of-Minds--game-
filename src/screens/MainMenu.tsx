@@ -70,6 +70,30 @@ const MainMenu: React.FC = () => {
           Daily Challenge
         </motion.button>
         <motion.button
+          onClick={() => setScreen('custom')}
+          className="block w-64 px-6 py-3 bg-neural-yellow hover:bg-neural-yellow text-bg-app font-semibold rounded-lg transition-all duration-300"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Custom Puzzles
+        </motion.button>
+        <motion.button
+          onClick={() => setScreen('leaderboard')}
+          className="block w-64 px-6 py-3 bg-gradient-to-r from-neural-purple to-neural-blue hover:from-neural-purple hover:to-neural-blue text-bg-app font-semibold rounded-lg transition-all duration-300"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Leaderboard
+        </motion.button>
+        <motion.button
+          onClick={() => setScreen('profile')}
+          className="block w-64 px-6 py-3 bg-gradient-to-r from-neural-green to-neural-yellow hover:from-neural-green hover:to-neural-yellow text-bg-app font-semibold rounded-lg transition-all duration-300"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Profile & Achievements
+        </motion.button>
+        <motion.button
           onClick={() => setScreen('settings')}
           className="block w-64 px-6 py-3 bg-neural-red hover:bg-neural-red text-text-primary font-semibold rounded-lg transition-all duration-300"
           whileHover={{ scale: 1.05 }}

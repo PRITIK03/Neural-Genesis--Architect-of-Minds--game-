@@ -14,7 +14,7 @@ export interface TrainingData {
 interface NetworkState {
   layers: Layer[];
   selectedLayerId: string | null;
-  currentLevelId: number | null;
+  currentLevelId: string | null;
   isTraining: boolean;
   loss: number;
   accuracy: number;
@@ -24,7 +24,7 @@ interface NetworkState {
   removeLayer: (id: string) => void;
   updateLayer: (id: string, config: Record<string, any>) => void;
   setSelectedLayer: (id: string | null) => void;
-  setCurrentLevel: (id: number) => void;
+  setCurrentLevel: (id: string) => void;
   startTraining: (data: TrainingData, epochs: number) => void;
   stopTraining: () => void;
 }

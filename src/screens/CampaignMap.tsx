@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
+import { LineChart, Line, ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis } from 'recharts';
 import { useAppStore } from '../stores/appStore';
 import { useNetworkStore } from '../stores/networkStore';
 import levels from '../lib/levels';
@@ -11,8 +12,10 @@ const CampaignMap: React.FC = () => {
 
   // Simple tree layout: levels in rows
   const rows = [
-    [1], // Act 1: Foundations
-    [2, 3],
+    ['level-1'], // Act 1: Foundations
+    ['level-2', 'level-3'],
+    ['level-4', 'level-5'],
+    ['level-6', 'level-7'],
   ];
 
   const containerVariants = {
@@ -74,6 +77,7 @@ const CampaignMap: React.FC = () => {
             <div key={rowIndex} className="flex justify-center space-x-8">
               {row.map((levelId) => {
                 const level = levels.find(l => l.id === levelId);
+                const levelNumber = level ? parseInt(level.id.split('-')[1]) : 0;
                 return (
                   <Tooltip key={levelId}>
                     <TooltipTrigger asChild>
@@ -84,13 +88,43 @@ const CampaignMap: React.FC = () => {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                       >
-                        {levelId}
+                        {levelNumber}
                       </motion.button>
                     </TooltipTrigger>
                     <TooltipContent className="glass p-4 rounded-lg max-w-xs">
                       <h3 className="text-lg font-bold text-text-primary">{level?.name || `Level ${levelId}`}</h3>
-                      <p className="text-sm text-text-secondary">{level?.description || 'No description'}</p>
-                      {/* Add mini sparkline here later */}
+                      <p className="text-sm text-text-secondary mb-2">{level?.description || 'No description'}</p>
+                      {level?.puzzleData && (
+                        <div className="space-y-2">
+                          <div className="text-xs text-text-secondary">
+                            Input: {level.puzzleData.inputShape.join('×')} → Output: {level.puzzleData.outputShape.join('×')}
+                          </div>
+                          <div className="text-xs text-text-secondary">
+                            Samples: {level.puzzleData.trainingData.length} | Threshold: {(level.puzzleData.accuracyThreshold * 100).toFixed(0)}%
+                          </div>
+                          {level.puzzleData.inputShape[0] === 2 && level.puzzleData.outputShape[0] === 1 && (
+                            <div className="h-16 w-full">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <ScatterChart data={level.puzzleData.trainingData.map(d => ({
+                                  x: d.input[0],
+                                  y: d.input[1],
+                                  output: d.output[0]
+                                }))}>
+                                  <Scatter
+                                    dataKey="output"
+                                    fill={(entry: any) => entry.output > 0.5 ? 'var(--neural-green)' : 'var(--neural-red)'}
+                                  />
+                                </ScatterChart>
+                              </ResponsiveContainer>
+                            </div>
+                          )}
+                          {level.puzzleData.inputShape.length === 3 && level.puzzleData.inputShape[2] === 1 && (
+                            <div className="text-xs text-text-secondary text-center">
+                              Convolutional Input: {level.puzzleData.inputShape.join('×')}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </TooltipContent>
                   </Tooltip>
                 );

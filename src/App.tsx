@@ -6,6 +6,9 @@ import ResultsScreen from './screens/ResultsScreen';
 import Sandbox from './screens/Sandbox';
 import Settings from './screens/Settings';
 import DailyChallenge from './screens/DailyChallenge';
+import CustomPuzzleBuilder from './screens/CustomPuzzleBuilder';
+import Leaderboard from './screens/Leaderboard';
+import ProfileAchievements from './screens/ProfileAchievements';
 
 function App() {
   const currentScreen = useAppStore((state) => state.currentScreen);
@@ -25,6 +28,12 @@ function App() {
       return <DailyChallenge />;
     case 'settings':
       return <Settings />;
+    case 'custom':
+      return <CustomPuzzleBuilder />;
+    case 'leaderboard':
+      return <Leaderboard />;
+    case 'profile':
+      return <ProfileAchievements />;
     default:
       return <MainMenu />;
   }

@@ -56,11 +56,81 @@ const LayerProperties: React.FC<{ layerId: string }> = ({ layerId }) => {
               <option value="relu">ReLU</option>
               <option value="sigmoid">Sigmoid</option>
               <option value="tanh">Tanh</option>
+              <option value="linear">Linear</option>
             </select>
           </motion.label>
         </div>
       )}
-      {/* Add more types later */}
+      {layer.type === 'conv2d' && (
+        <div className="space-y-3">
+          <motion.label
+            className="block"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <span className="text-sm text-text-secondary">Filters:</span>
+            <input
+              type="number"
+              value={layer.config.filters || ''}
+              onChange={(e) => handleConfigChange('filters', Number(e.target.value))}
+              className="w-full p-2 mt-1 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+            />
+          </motion.label>
+          <motion.label
+            className="block"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <span className="text-sm text-text-secondary">Kernel Size:</span>
+            <input
+              type="number"
+              value={layer.config.kernelSize || ''}
+              onChange={(e) => handleConfigChange('kernelSize', Number(e.target.value))}
+              className="w-full p-2 mt-1 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+            />
+          </motion.label>
+          <motion.label
+            className="block"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <span className="text-sm text-text-secondary">Activation:</span>
+            <select
+              value={layer.config.activation || ''}
+              onChange={(e) => handleConfigChange('activation', e.target.value)}
+              className="w-full p-2 mt-1 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+            >
+              <option value="relu">ReLU</option>
+              <option value="sigmoid">Sigmoid</option>
+              <option value="tanh">Tanh</option>
+            </select>
+          </motion.label>
+        </div>
+      )}
+      {layer.type === 'dropout' && (
+        <div className="space-y-3">
+          <motion.label
+            className="block"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <span className="text-sm text-text-secondary">Rate:</span>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="1"
+              value={layer.config.rate || ''}
+              onChange={(e) => handleConfigChange('rate', Number(e.target.value))}
+              className="w-full p-2 mt-1 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+            />
+          </motion.label>
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -73,9 +143,12 @@ const NetworkBuilder: React.FC = () => {
 
   const handleAddLayer = (type: Layer['type']) => {
     const newLayer: Layer = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       type,
-      config: type === 'dense' ? { units: 10, activation: 'relu' } : {},
+      config: type === 'dense' ? { units: 10, activation: 'relu' }
+             : type === 'conv2d' ? { filters: 32, kernelSize: 3, activation: 'relu' }
+             : type === 'dropout' ? { rate: 0.2 }
+             : {},
     };
     addLayer(newLayer);
   };
@@ -134,7 +207,9 @@ const NetworkBuilder: React.FC = () => {
               transition={{ delay: index * 0.1 }}
               whileHover={{ scale: 1.02 }}
             >
-              {layer.type} - {layer.config.units || 'N/A'}
+              {layer.type === 'dense' && `${layer.type} (${layer.config.units || 0} units)`}
+              {layer.type === 'conv2d' && `${layer.type} (${layer.config.filters || 0} filters, ${layer.config.kernelSize || 0}x${layer.config.kernelSize || 0})`}
+              {layer.type === 'dropout' && `${layer.type} (${layer.config.rate || 0} rate)`}
             </motion.div>
           ))}
         </div>
@@ -188,7 +263,17 @@ const NetworkBuilder: React.FC = () => {
           <h3 className="text-lg mb-2">Training</h3>
           {level && <p className="mb-2 text-sm text-text-secondary">{level.name}: {level.description}</p>}
           <motion.button
-            onClick={() => isTraining ? stopTraining() : startTraining(level?.data || {inputs: [], outputs: []}, 100)}
+            onClick={() => {
+              if (isTraining) {
+                stopTraining();
+              } else if (level) {
+                const trainingData = {
+                  inputs: level.puzzleData.trainingData.map(d => d.input),
+                  outputs: level.puzzleData.trainingData.map(d => d.output),
+                };
+                startTraining(trainingData, level.puzzleData.maxEpochs || 100);
+              }
+            }}
             disabled={!level || layers.length === 0}
             className="w-full bg-neural-green hover:bg-neural-green text-bg-app p-2 rounded-lg disabled:opacity-50 mb-2 transition-all duration-300"
             whileHover={{ scale: 1.05 }}
