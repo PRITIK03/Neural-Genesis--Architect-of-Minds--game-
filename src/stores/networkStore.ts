@@ -56,14 +56,46 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
   trainingHistory: [],
   worker: null,
   addLayer: (layer) => set((state) => ({ layers: [...state.layers, layer] })),
-  removeLayer: (id) => set((state) => ({ layers: state.layers.filter((l) => l.id !== id) })),
+  removeLayer: (id) =>
+    set((state) => ({
+      layers: state.layers.filter((l) => l.id !== id),
+      selectedLayerId: state.selectedLayerId === id ? null : state.selectedLayerId,
+    })),
   updateLayer: (id, config) =>
     set((state) => ({
       layers: state.layers.map((l) => (l.id === id ? { ...l, config } : l)),
     })),
   setSelectedLayer: (id) => set({ selectedLayerId: id }),
-  setCurrentLevel: (id) => set({ currentLevelId: id }),
-  setCustomPuzzle: (puzzle) => set({ customPuzzle: puzzle, currentLevelId: puzzle ? `custom-${puzzle.id}` : null }),
+  setCurrentLevel: (id) => {
+    const { worker } = get();
+    worker?.terminate();
+    set({
+      worker: null,
+      currentLevelId: id,
+      customPuzzle: null,
+      layers: [],
+      selectedLayerId: null,
+      trainingHistory: [],
+      loss: 0,
+      accuracy: 0,
+      isTraining: false,
+    });
+  },
+  setCustomPuzzle: (puzzle) => {
+    const { worker } = get();
+    worker?.terminate();
+    set({
+      worker: null,
+      customPuzzle: puzzle,
+      currentLevelId: puzzle ? `custom-${puzzle.id}` : null,
+      layers: [],
+      selectedLayerId: null,
+      trainingHistory: [],
+      loss: 0,
+      accuracy: 0,
+      isTraining: false,
+    });
+  },
   startTraining: (data, epochs) => {
     const { layers, customPuzzle } = get();
     if (layers.length === 0) return;

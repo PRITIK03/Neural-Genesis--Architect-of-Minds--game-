@@ -21,6 +21,37 @@
 
 body {
   font-family: 'Inter', sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.panel-card {
+  border-radius: 1rem;
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(145deg, rgba(26, 32, 64, 0.92), rgba(17, 22, 51, 0.85));
+  box-shadow:
+    0 0 0 1px rgba(0, 217, 255, 0.06),
+    0 24px 48px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200;
+  background: linear-gradient(135deg, var(--neural-blue), #0099cc);
+  color: var(--bg-app);
+  box-shadow: 0 0 24px rgba(0, 217, 255, 0.35);
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 32px rgba(0, 217, 255, 0.45);
 }
 
 .glass {
