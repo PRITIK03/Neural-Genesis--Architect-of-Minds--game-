@@ -146,7 +146,7 @@ self.onmessage = async (e: MessageEvent<TrainingMessage>) => {
   await model.fit(xs as any, ys as any, {
     epochs,
     callbacks: {
-      onEpochEnd: async (epoch, logs) => {
+      onEpochEnd: (epoch, logs) => {
         const l: any = logs || {};
         const progress: ProgressMessage = {
           type: 'progress',
