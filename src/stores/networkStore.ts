@@ -43,6 +43,7 @@ interface NetworkState {
   setCustomPuzzle: (puzzle: CustomPuzzle | null) => void;
   startTraining: (data: TrainingData, epochs: number) => void;
   stopTraining: () => void;
+  clearWorkspace: () => void;
 }
 
 export const useNetworkStore = create<NetworkState>((set, get) => ({
@@ -141,5 +142,18 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
       worker.terminate();
       set({ worker: null, isTraining: false });
     }
+  },
+  clearWorkspace: () => {
+    const { worker } = get();
+    worker?.terminate();
+    set({
+      worker: null,
+      layers: [],
+      selectedLayerId: null,
+      trainingHistory: [],
+      loss: 0,
+      accuracy: 0,
+      isTraining: false,
+    });
   },
 }));

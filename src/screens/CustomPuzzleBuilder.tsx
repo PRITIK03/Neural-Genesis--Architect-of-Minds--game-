@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '../stores/appStore';
 import { useNetworkStore } from '../stores/networkStore';
+import { NeuralBackdrop } from '../components/NeuralBackdrop';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { visitMode } from '../lib/playerProgress';
 
 interface CustomPuzzle {
   id: string;
@@ -20,6 +23,11 @@ interface CustomPuzzle {
 const CustomPuzzleBuilder: React.FC = () => {
   const setScreen = useAppStore((state) => state.setScreen);
   const setCustomPuzzle = useNetworkStore((state) => state.setCustomPuzzle);
+
+  useEffect(() => {
+    visitMode('custom');
+  }, []);
+
   const [puzzle, setPuzzle] = useState<Partial<CustomPuzzle>>({
     id: crypto.randomUUID(),
     name: '',
@@ -44,23 +52,24 @@ const CustomPuzzleBuilder: React.FC = () => {
     const lines = csvData.trim().split('\n');
     if (lines.length === 0) return;
 
-    const data = lines.slice(hasHeaders ? 1 : 0).map(line =>
-      line.split(',').map(cell => parseFloat(cell.trim()))
-    ).filter(row => row.every(val => !isNaN(val)));
+    const data = lines
+      .slice(hasHeaders ? 1 : 0)
+      .map((line) => line.split(',').map((cell) => parseFloat(cell.trim())))
+      .filter((row) => row.every((val) => !Number.isNaN(val)));
 
     if (data.length === 0) return;
 
     const inputCols = puzzle.inputShape?.[0] || 1;
-    const trainingData = data.slice(0, Math.floor(data.length * 0.8)).map(row => ({
+    const trainingData = data.slice(0, Math.floor(data.length * 0.8)).map((row) => ({
       input: row.slice(0, inputCols),
       output: row.slice(inputCols),
     }));
-    const testData = data.slice(Math.floor(data.length * 0.8)).map(row => ({
+    const testData = data.slice(Math.floor(data.length * 0.8)).map((row) => ({
       input: row.slice(0, inputCols),
       output: row.slice(inputCols),
     }));
 
-    setPuzzle(prev => ({
+    setPuzzle((prev) => ({
       ...prev,
       trainingData,
       testData,
@@ -93,204 +102,182 @@ const CustomPuzzleBuilder: React.FC = () => {
   };
 
   return (
-    <motion.div
-      className="min-h-screen bg-gradient-to-b from-bg-app to-bg-panel text-text-primary p-8"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <motion.div
-        className="max-w-4xl mx-auto"
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <motion.button
-          onClick={() => setScreen('mainMenu')}
-          className="mb-6 bg-neural-blue hover:bg-neural-blue text-bg-app px-4 py-2 rounded-lg neon-glow transition-all duration-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          ← Back to Main Menu
-        </motion.button>
+    <div className="relative min-h-screen px-4 py-10 text-text-primary md:px-10">
+      <NeuralBackdrop />
 
-        <h1 className="text-3xl font-bold mb-8 text-neural-blue">Custom Puzzle Builder</h1>
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <ScreenHeader
+          title="Custom puzzle lab"
+          subtitle="Describe constraints, paste CSV (features then targets per row), parse, then jump into the builder."
+          onBack={() => setScreen('mainMenu')}
+          backLabel="Main menu"
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <motion.div
-            className="glass p-6 rounded-lg"
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <h2 className="text-xl font-semibold mb-4 text-neural-purple">Puzzle Settings</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-text-secondary mb-1">Puzzle Name</label>
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <motion.div className="panel-card p-6 md:p-8" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+            <h2 className="text-lg font-semibold text-neural-purple">Story & naming</h2>
+            <div className="mt-4 space-y-4">
+              <label className="block text-sm text-text-secondary">
+                Puzzle name
                 <input
                   type="text"
                   value={puzzle.name || ''}
-                  onChange={(e) => setPuzzle(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full p-2 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
-                  placeholder="My Custom Puzzle"
+                  onChange={(e) => setPuzzle((prev) => ({ ...prev, name: e.target.value }))}
+                  className="mt-1 w-full rounded-xl border border-border-subtle bg-bg-app p-3 text-text-primary focus:border-neural-blue focus:outline-none"
+                  placeholder="My dataset puzzle"
                 />
-              </div>
-              <div>
-                <label className="block text-sm text-text-secondary mb-1">Description</label>
+              </label>
+              <label className="block text-sm text-text-secondary">
+                Description
                 <textarea
                   value={puzzle.description || ''}
-                  onChange={(e) => setPuzzle(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full p-2 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
-                  placeholder="Describe your puzzle..."
+                  onChange={(e) => setPuzzle((prev) => ({ ...prev, description: e.target.value }))}
+                  className="mt-1 min-h-[96px] w-full rounded-xl border border-border-subtle bg-bg-app p-3 text-text-primary focus:border-neural-blue focus:outline-none"
+                  placeholder="What should the learner figure out?"
                   rows={3}
                 />
-              </div>
+              </label>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-text-secondary mb-1">Input Features</label>
+                <label className="block text-sm text-text-secondary">
+                  Input features (columns)
                   <input
                     type="number"
+                    min={1}
                     value={puzzle.inputShape?.[0] || ''}
-                    onChange={(e) => setPuzzle(prev => ({ ...prev, inputShape: [Number(e.target.value)] }))}
-                    className="w-full p-2 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+                    onChange={(e) => setPuzzle((prev) => ({ ...prev, inputShape: [Number(e.target.value)] }))}
+                    className="mt-1 w-full rounded-xl border border-border-subtle bg-bg-app p-3 text-text-primary focus:border-neural-blue focus:outline-none"
                     placeholder="2"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm text-text-secondary mb-1">Output Classes</label>
+                </label>
+                <label className="block text-sm text-text-secondary">
+                  Output dimension
                   <input
                     type="number"
+                    min={1}
                     value={puzzle.outputShape?.[0] || ''}
-                    onChange={(e) => setPuzzle(prev => ({ ...prev, outputShape: [Number(e.target.value)] }))}
-                    className="w-full p-2 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+                    onChange={(e) => setPuzzle((prev) => ({ ...prev, outputShape: [Number(e.target.value)] }))}
+                    className="mt-1 w-full rounded-xl border border-border-subtle bg-bg-app p-3 text-text-primary focus:border-neural-blue focus:outline-none"
                     placeholder="1"
                   />
-                </div>
+                </label>
               </div>
             </div>
           </motion.div>
 
-          <motion.div
-            className="glass p-6 rounded-lg"
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <h2 className="text-xl font-semibold mb-4 text-neural-purple">Training Constraints</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-text-secondary mb-1">Accuracy Threshold</label>
+          <motion.div className="panel-card p-6 md:p-8" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <h2 className="text-lg font-semibold text-neural-purple">Training budget</h2>
+            <div className="mt-4 space-y-4">
+              <label className="block text-sm text-text-secondary">
+                Accuracy target (0–1)
                 <input
                   type="number"
-                  step="0.05"
-                  min="0"
-                  max="1"
-                  value={puzzle.accuracyThreshold || 0.8}
-                  onChange={(e) => setPuzzle(prev => ({ ...prev, accuracyThreshold: Number(e.target.value) }))}
-                  className="w-full p-2 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+                  step={0.05}
+                  min={0}
+                  max={1}
+                  value={puzzle.accuracyThreshold ?? 0.8}
+                  onChange={(e) => setPuzzle((prev) => ({ ...prev, accuracyThreshold: Number(e.target.value) }))}
+                  className="mt-1 w-full rounded-xl border border-border-subtle bg-bg-app p-3 text-text-primary focus:border-neural-blue focus:outline-none"
                 />
-              </div>
-              <div>
-                <label className="block text-sm text-text-secondary mb-1">Max Epochs</label>
+              </label>
+              <label className="block text-sm text-text-secondary">
+                Max epochs
                 <input
                   type="number"
-                  value={puzzle.maxEpochs || 100}
-                  onChange={(e) => setPuzzle(prev => ({ ...prev, maxEpochs: Number(e.target.value) }))}
-                  className="w-full p-2 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+                  min={1}
+                  value={puzzle.maxEpochs ?? 100}
+                  onChange={(e) => setPuzzle((prev) => ({ ...prev, maxEpochs: Number(e.target.value) }))}
+                  className="mt-1 w-full rounded-xl border border-border-subtle bg-bg-app p-3 text-text-primary focus:border-neural-blue focus:outline-none"
                 />
-              </div>
+              </label>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-text-secondary mb-1">Max Layers</label>
+                <label className="block text-sm text-text-secondary">
+                  Max layers
                   <input
                     type="number"
-                    value={puzzle.maxLayers || 5}
-                    onChange={(e) => setPuzzle(prev => ({ ...prev, maxLayers: Number(e.target.value) }))}
-                    className="w-full p-2 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+                    min={1}
+                    value={puzzle.maxLayers ?? 5}
+                    onChange={(e) => setPuzzle((prev) => ({ ...prev, maxLayers: Number(e.target.value) }))}
+                    className="mt-1 w-full rounded-xl border border-border-subtle bg-bg-app p-3 text-text-primary focus:border-neural-blue focus:outline-none"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm text-text-secondary mb-1">Max Neurons/Layer</label>
+                </label>
+                <label className="block text-sm text-text-secondary">
+                  Max units / filters
                   <input
                     type="number"
-                    value={puzzle.maxNeurons || 20}
-                    onChange={(e) => setPuzzle(prev => ({ ...prev, maxNeurons: Number(e.target.value) }))}
-                    className="w-full p-2 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300"
+                    min={1}
+                    value={puzzle.maxNeurons ?? 20}
+                    onChange={(e) => setPuzzle((prev) => ({ ...prev, maxNeurons: Number(e.target.value) }))}
+                    className="mt-1 w-full rounded-xl border border-border-subtle bg-bg-app p-3 text-text-primary focus:border-neural-blue focus:outline-none"
                   />
-                </div>
+                </label>
               </div>
             </div>
           </motion.div>
         </div>
 
-        <motion.div
-          className="glass p-6 rounded-lg mt-8"
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.8 }}
-        >
-          <h2 className="text-xl font-semibold mb-4 text-neural-purple">Dataset Upload</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={hasHeaders}
-                  onChange={(e) => setHasHeaders(e.target.checked)}
-                  className="rounded border-border-subtle"
-                />
-                <span className="text-sm text-text-secondary">First row contains headers</span>
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm text-text-secondary mb-1">CSV Data</label>
-              <textarea
-                value={csvData}
-                onChange={handleCsvUpload}
-                className="w-full p-4 bg-bg-elevated border border-border-subtle text-text-primary rounded-lg focus:border-neural-blue focus:outline-none transition-all duration-300 font-mono text-sm"
-                placeholder="Paste your CSV data here...&#10;feature1,feature2,target&#10;1.0,2.0,0.0&#10;2.0,3.0,1.0&#10;..."
-                rows={10}
-              />
-            </div>
-            <div className="flex space-x-4">
-              <motion.button
-                onClick={parseCsv}
-                className="bg-neural-green hover:bg-neural-green text-bg-app px-6 py-2 rounded-lg transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Parse CSV
-              </motion.button>
-              <motion.button
-                onClick={handleSave}
-                disabled={!puzzle.name || !puzzle.trainingData?.length}
-                className="bg-neural-blue hover:bg-neural-blue text-bg-app px-6 py-2 rounded-lg disabled:opacity-50 transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Save Puzzle
-              </motion.button>
-            </div>
+        <motion.div className="panel-card mt-6 p-6 md:p-8" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <h2 className="text-lg font-semibold text-neural-purple">Dataset import</h2>
+          <p className="mt-2 text-sm text-text-secondary">
+            Each row: comma-separated inputs then outputs. Example with two inputs and one output:{' '}
+            <code className="rounded bg-bg-app px-2 py-0.5 text-xs text-neural-blue">0.1,0.4,1</code>
+          </p>
+          <label className="mt-4 flex items-center gap-2 text-sm text-text-secondary">
+            <input type="checkbox" checked={hasHeaders} onChange={(e) => setHasHeaders(e.target.checked)} className="rounded border-border-subtle accent-neural-blue" />
+            First row is a header
+          </label>
+          <textarea
+            value={csvData}
+            onChange={handleCsvUpload}
+            className="mt-4 min-h-[180px] w-full rounded-xl border border-border-subtle bg-bg-app p-4 font-mono text-sm text-text-primary focus:border-neural-blue focus:outline-none"
+            placeholder={'feature_a,feature_b,target\n0,0,0\n0,1,1\n'}
+            rows={8}
+          />
+          <div className="mt-4 flex flex-wrap gap-3">
+            <motion.button
+              type="button"
+              onClick={parseCsv}
+              className="rounded-xl bg-neural-green px-6 py-2.5 text-sm font-semibold text-bg-app"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Parse CSV
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={handleSave}
+              disabled={!puzzle.name || !puzzle.trainingData?.length}
+              className="rounded-xl bg-neural-blue px-6 py-2.5 text-sm font-semibold text-bg-app neon-glow disabled:opacity-45"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Save & open builder
+            </motion.button>
           </div>
 
           {(puzzle.trainingData?.length || 0) > 0 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2 text-neural-green">Dataset Preview</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-text-secondary">Training Samples: {puzzle.trainingData?.length}</p>
-                  <p className="text-sm text-text-secondary">Test Samples: {puzzle.testData?.length}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-text-secondary">Input Shape: [{puzzle.inputShape?.join(', ')}]</p>
-                  <p className="text-sm text-text-secondary">Output Shape: [{puzzle.outputShape?.join(', ')}]</p>
-                </div>
+            <div className="mt-6 rounded-xl border border-neural-green/30 bg-neural-green/5 p-4">
+              <h3 className="text-sm font-semibold text-neural-green">Dataset preview</h3>
+              <div className="mt-3 grid gap-3 text-sm text-text-secondary sm:grid-cols-2">
+                <p>
+                  Training samples: <span className="text-text-primary">{puzzle.trainingData?.length}</span>
+                </p>
+                <p>
+                  Holdout samples: <span className="text-text-primary">{puzzle.testData?.length}</span>
+                </p>
+                <p>
+                  Input shape:{' '}
+                  <span className="font-mono text-text-primary">[{puzzle.inputShape?.join(', ')}]</span>
+                </p>
+                <p>
+                  Output shape:{' '}
+                  <span className="font-mono text-text-primary">[{puzzle.outputShape?.join(', ')}]</span>
+                </p>
               </div>
             </div>
           )}
         </motion.div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
