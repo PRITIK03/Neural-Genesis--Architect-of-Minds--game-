@@ -154,6 +154,8 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
       loss: 0,
       accuracy: 0,
       isTraining: false,
+      currentLevelId: null,
+      customPuzzle: null,
     });
   },
 }));
