@@ -170,5 +170,6 @@ self.onmessage = async (e: MessageEvent<TrainingMessage>) => {
 
   xs.dispose();
   ys.dispose();
+  evalResult.forEach((t) => t.dispose());
   model.dispose();
 };

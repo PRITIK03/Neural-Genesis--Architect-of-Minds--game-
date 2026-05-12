@@ -1,5 +1,3 @@
-import React from 'react';
-
 /** Full-screen ambient grid + vignette; keeps screens visually consistent */
 export function NeuralBackdrop({ className = '' }: { className?: string }) {
   return (

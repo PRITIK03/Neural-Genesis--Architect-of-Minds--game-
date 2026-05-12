@@ -214,15 +214,15 @@ export const levels: Level[] = [
       outputShape: [1],
       trainingData: [
         // Class 0: first two inputs similar, noise in third
-        { input: [0.1, 0.2, Math.random()], output: [0] },
-        { input: [0.3, 0.4, Math.random()], output: [0] },
-        { input: [0.5, 0.6, Math.random()], output: [0] },
-        { input: [0.7, 0.8, Math.random()], output: [0] },
+        { input: [0.1, 0.2, 0.25], output: [0] },
+        { input: [0.3, 0.4, 0.35], output: [0] },
+        { input: [0.5, 0.6, 0.45], output: [0] },
+        { input: [0.7, 0.8, 0.55], output: [0] },
         // Class 1: first two inputs different, noise in third
-        { input: [0.1, 0.8, Math.random()], output: [1] },
-        { input: [0.2, 0.9, Math.random()], output: [1] },
-        { input: [0.3, 0.7, Math.random()], output: [1] },
-        { input: [0.4, 0.6, Math.random()], output: [1] },
+        { input: [0.1, 0.8, 0.65], output: [1] },
+        { input: [0.2, 0.9, 0.75], output: [1] },
+        { input: [0.3, 0.7, 0.85], output: [1] },
+        { input: [0.4, 0.6, 0.95], output: [1] },
       ],
       testData: [
         { input: [0.2, 0.3, 0.5], output: [0] },
