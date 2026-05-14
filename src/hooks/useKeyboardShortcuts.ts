@@ -1,7 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
 
-type ShortcutHandler = (event: KeyboardEvent) => void;
-
 interface ShortcutConfig {
   key: string;
   ctrl?: boolean;
