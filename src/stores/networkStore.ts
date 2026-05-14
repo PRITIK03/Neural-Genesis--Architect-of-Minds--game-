@@ -231,7 +231,7 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
     const session = { ...defaultSession, ...trainingSession, ...sessionOverride };
 
     const worker = new Worker(new URL('../workers/trainingWorker.ts', import.meta.url));
-    set({ worker, trainingStatus: 'training', trainingHistory: [], trainingSession: session, error: null });
+    set({ worker, trainingStatus: 'training', trainingHistory: [], trainingSession: session, error: null, currentMetrics: { loss: 0, accuracy: 0 } });
 
     worker.postMessage({
       type: 'start',
@@ -244,9 +244,9 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
     });
 
     worker.onmessage = (e) => {
-      const { type, epoch, loss, accuracy, error: workerError } = e.data;
+      const { type, epoch, loss, accuracy, error } = e.data;
       if (type === 'error') {
-        set({ trainingStatus: 'stopped', error: workerError });
+        set({ trainingStatus: 'stopped', error });
         worker.terminate();
         set({ worker: null });
         return;
@@ -254,18 +254,28 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
       if (type === 'progress') {
         set((state) => ({
           currentMetrics: { loss, accuracy },
-          trainingHistory: [...state.trainingHistory, { epoch, loss, accuracy }],
-  saveModel: (name) => {
-    const { layers } = get();
-    const model = {
-      id: crypto.randomUUID(),
-      name,
-      layers: [...layers],
-      timestamp: Date.now(),
+          trainingHistory: [...state.trainingHistory, {
+            epoch,
+            loss,
+            accuracy,
+            learningRate: session.learningRate,
+          }],
+        }));
+      } else if (type === 'done') {
+        set({
+          trainingStatus: 'completed',
+          currentMetrics: { loss, accuracy },
+        });
+        // Store weights for visualization
+        // Note: weights would come in the message, but keeping simple for now
+        worker.terminate();
+        set({ worker: null });
+      } else if (type === 'paused') {
+        set({ trainingStatus: 'paused' });
+      } else if (type === 'resumed') {
+        set({ trainingStatus: 'training' });
+      }
     };
-    set((state) => ({
-      savedModels: [...state.savedModels, model],
-    }));
   },
 
   loadModel: (id) => {
