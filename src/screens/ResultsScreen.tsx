@@ -13,21 +13,13 @@ type ResultsTab = 'summary' | 'weights' | 'history';
 
 const ResultsScreen: React.FC = () => {
   const setScreen = useAppStore((state) => state.setScreen);
-  const {
-    currentLevelId,
-    customPuzzle,
-    loss,
-    accuracy,
-    layers,
-    trainingHistory,
-    savedModels,
-    trainingSession,
-  } = useNetworkStore();
+  const { currentLevelId, customPuzzle, currentMetrics, layers, trainingHistory, trainingSession } = useNetworkStore();
   const [activeTab, setActiveTab] = useState<ResultsTab>('summary');
-  const [showWeights, setShowWeights] = useState(false);
 
   const level = levels.find((l) => l.id === currentLevelId) ?? null;
   const threshold = level?.puzzleData.accuracyThreshold ?? customPuzzle?.accuracyThreshold ?? 0;
+  const accuracy = currentMetrics.accuracy;
+  const loss = currentMetrics.loss;
   const title = level?.name ?? customPuzzle?.name ?? 'Puzzle';
   const description = level?.description ?? customPuzzle?.description ?? '';
 

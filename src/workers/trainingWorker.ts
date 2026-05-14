@@ -125,11 +125,10 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     const outputActivation = oneHot ? 'softmax' : isBinary ? 'sigmoid' : 'linear';
     const lossFn = oneHot ? 'categoricalCrossentropy' : isBinary ? 'binaryCrossentropy' : 'meanSquaredError';
 
-    const shouldUseConv = layers.some((l) => l.type === 'conv2d') || layers.some((l) => l.type === 'pooling');
-    const needsFlatten = layers.some((l) => l.type === 'dense' || l.type === 'dropout' || l.type === 'batchNorm') &&
-                         layers.some((l) => l.type === 'conv2d' || l.type === 'pooling');
+    const shouldUseConv = layers.some((l) => l.type === 'conv2d' || l.type === 'pooling');
 
-    model = tf.sequential();
+    const sequentialModel = tf.sequential();
+    model = sequentialModel as any;
 
     let previousWasConv = false;
 
@@ -138,10 +137,10 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
 
       if (layer.type === 'dense') {
         if (previousWasConv) {
-          model.add(tf.layers.flatten());
+          sequentialModel.add(tf.layers.flatten());
           previousWasConv = false;
         }
-        model.add(
+        sequentialModel.add(
           tf.layers.dense({
             units: layer.config.units,
             activation: layer.config.activation,
@@ -156,7 +155,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           ? ([Math.sqrt(inferredInputSize), Math.sqrt(inferredInputSize), 1] as [number, number, number])
           : undefined;
 
-        model.add(
+        sequentialModel.add(
           tf.layers.conv2d({
             filters: layer.config.filters,
             kernelSize: layer.config.kernelSize,
@@ -171,12 +170,12 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
       }
 
       if (layer.type === 'dropout') {
-        model.add(tf.layers.dropout({ rate: layer.config.rate }));
+        sequentialModel.add(tf.layers.dropout({ rate: layer.config.rate }));
         continue;
       }
 
       if (layer.type === 'batchNorm') {
-        model.add(tf.layers.batchNormalization({
+        sequentialModel.add(tf.layers.batchNormalization({
           momentum: layer.config.momentum || 0.99,
           epsilon: layer.config.epsilon || 0.001,
         }));
@@ -184,7 +183,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
       }
 
       if (layer.type === 'pooling') {
-        model.add(tf.layers.maxPooling2d({
+        sequentialModel.add(tf.layers.maxPooling2d({
           poolSize: [layer.config.poolSize || 2, layer.config.poolSize || 2],
           strides: layer.config.strides || layer.config.poolSize || 2,
           padding: 'same',
@@ -194,19 +193,19 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
       }
 
       if (layer.type === 'flatten') {
-        model.add(tf.layers.flatten());
+        sequentialModel.add(tf.layers.flatten());
         continue;
       }
     }
 
-    if (previousWasConv || needsFlatten) {
-      model.add(tf.layers.flatten());
+    if (previousWasConv) {
+      sequentialModel.add(tf.layers.flatten());
     }
 
     // Output layer
-    model.add(tf.layers.dense({ units: outSize, activation: outputActivation }));
+    sequentialModel.add(tf.layers.dense({ units: outSize, activation: outputActivation }));
 
-    model.compile({
+    sequentialModel.compile({
       optimizer: getOptimizer(optimizerType, learningRate),
       loss: lossFn as any,
       metrics: ['accuracy'],
@@ -221,7 +220,6 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
       if (Number.isInteger(side)) {
         xs = tf.tensor2d(data.inputs).reshape([data.inputs.length, side, side, 1]);
       } else {
-        // Fallback: treat as flat
         xs = tf.tensor2d(data.inputs);
       }
     } else {
@@ -259,12 +257,12 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
       validationSplit: 0.1,
     };
 
-    await model.fit(xs as any, ys as any, trainConfig);
+    await sequentialModel.fit(xs as any, ys as any, trainConfig);
 
     // Evaluation
-    const evalResult = model.evaluate(xs as any, ys as any) as tf.Tensor[];
-    const loss = (await evalResult[0].data())[0];
-    const accuracy = (await evalResult[1].data())[0];
+    const evalResult = sequentialModel.evaluate(xs as any, ys as any) as tf.Tensor[];
+    const lossVal = (await evalResult[0].data())[0];
+    const accuracyVal = (await evalResult[1].data())[0];
 
     // Cleanup tensors
     xs.dispose();
@@ -272,7 +270,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     evalResult.forEach((t) => t.dispose());
 
     if (!shouldStop) {
-      self.postMessage({ type: 'done', loss, accuracy } satisfies ProgressMessage);
+      self.postMessage({ type: 'done', loss: lossVal, accuracy: accuracyVal });
     }
 
     cleanup();

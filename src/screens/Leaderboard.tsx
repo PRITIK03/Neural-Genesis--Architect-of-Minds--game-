@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useAppStore } from '../stores/appStore';
 import { NeuralBackdrop } from '../components/NeuralBackdrop';
 import { ScreenHeader } from '../components/ScreenHeader';
-import confetti from 'canvas-confetti';
 
 interface ScoreEntry {
   playerName: string;
@@ -30,7 +29,7 @@ const Leaderboard: React.FC = () => {
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'accuracy' | 'loss' | 'date'>('accuracy');
 
-  const [scores, setScores] = useState<ScoreEntry[]>(() => {
+  const [scores, _setScores] = useState<ScoreEntry[]>(() => {
     const stored = localStorage.getItem('neuropuzzle-scores');
     return stored ? JSON.parse(stored) : [];
   });

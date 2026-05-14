@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as tf from '@tensorflow/tfjs';
-import { useNetworkStore, Layer } from '../stores/networkStore';
+import { Layer } from '../stores/networkStore';
 
 interface InferencePanelProps {
   layers: Layer[];

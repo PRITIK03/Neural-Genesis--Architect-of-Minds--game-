@@ -1,6 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useNetworkStore, Layer } from '../stores/networkStore';
+
+interface Layer {
+  id: string;
+  type: 'dense' | 'conv2d' | 'dropout' | 'batchNorm' | 'pooling' | 'flatten';
+  config: Record<string, any>;
+}
 
 interface LayerCardProps {
   layer: Layer;
@@ -10,7 +15,6 @@ interface LayerCardProps {
   onRemove: (id: string) => void;
   onDuplicate?: (id: string) => void;
   onMove?: (id: string, direction: 'up' | 'down') => void;
-  maxNeurons?: number;
   showActions?: boolean;
 }
 
@@ -22,7 +26,6 @@ export const LayerCard: React.FC<LayerCardProps> = ({
   onRemove,
   onDuplicate,
   onMove,
-  maxNeurons = 999,
   showActions = true,
 }) => {
   const getSummary = () => {
@@ -37,7 +40,7 @@ export const LayerCard: React.FC<LayerCardProps> = ({
         return `momentum ${(layer.config as any).momentum ?? 0.99}`;
       case 'pooling':
         const poolType = (layer.config as any).type || 'max';
-        return `${poolType} pool ${(layer.config as any).poolSize ?? 2}×${(layer.config as any).poolSize ?? 2}`;
+        return `${poolType} pool ${(layer.config as any).poolSize || 2}×${(layer.config as any).poolSize || 2}`;
       case 'flatten':
         return 'flatten layer';
       default:
@@ -63,9 +66,6 @@ export const LayerCard: React.FC<LayerCardProps> = ({
         return 'border-border-subtle bg-bg-elevated/70';
     }
   };
-
-  const sizeBoost = (layer.config.units || layer.config.filters || 4) / 24;
-  const radius = 0.55 + Math.min(sizeBoost, 1.2);
 
   return (
     <motion.li
@@ -107,7 +107,7 @@ export const LayerCard: React.FC<LayerCardProps> = ({
           >
             Edit
           </button>
-          {onDuplicate && (
+          {onDuplicate && index < 8 && (
             <button
               type="button"
               className="rounded-lg border border-border-subtle px-2 py-1.5 text-xs text-text-secondary transition-colors hover:border-neural-blue/60 hover:text-text-primary"
@@ -130,7 +130,7 @@ export const LayerCard: React.FC<LayerCardProps> = ({
               ↑
             </button>
           )}
-          {onMove && index < get().layers.length - 1 && (
+          {onMove && (
             <button
               type="button"
               className="rounded-lg border border-border-subtle px-2 py-1.5 text-xs text-text-secondary transition-colors hover:border-neural-blue/60 hover:text-text-primary"

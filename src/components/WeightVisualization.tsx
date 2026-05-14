@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import * as tf from '@tensorflow/tfjs';
-import { useNetworkStore, Layer } from '../stores/networkStore';
+import { Layer } from '../stores/networkStore';
 
 interface WeightVisualizationProps {
   layers: Layer[];
@@ -225,8 +224,10 @@ export const WeightVisualization: React.FC<WeightVisualizationProps> = ({
 };
 
 function getStats(data: any) {
-  const arr = Array.isArray(data) ? data.flat(Infinity).map(Number) : Array.from(data);
-  const sum = arr.reduce((a, b) => a + b, 0);
+  const arr: number[] = Array.isArray(data)
+    ? (data as any[]).flat(Infinity).map((v: any) => Number(v) || 0)
+    : Array.from(data as ArrayLike<number>);
+  const sum = arr.reduce((a: number, b: number) => a + b, 0);
   return {
     min: Math.min(...arr),
     max: Math.max(...arr),

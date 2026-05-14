@@ -20,24 +20,16 @@ const NetworkBuilder: React.FC = () => {
     currentLevelId,
     customPuzzle,
     trainingStatus,
-    trainingHistory,
-    currentMetrics,
     trainingSession,
     addLayer,
     removeLayer,
-    updateLayer,
     setSelectedLayer,
     startTraining,
-    stopTraining,
-    pauseTraining,
-    reorderLayers,
     duplicateLayer,
     moveLayer,
-    clearWorkspace,
   } = useNetworkStore();
   const setScreen = useAppStore((state) => state.setScreen);
   const [activeTab, setActiveTab] = useState<SidebarTab>('layers');
-  const [showEditor, setShowEditor] = useState(false);
 
   const level = levels.find((l) => l.id === currentLevelId) ?? null;
   const puzzleData =
@@ -124,22 +116,6 @@ const NetworkBuilder: React.FC = () => {
     'Construct a neural network, tune hyperparameters, and train to solve the puzzle.';
 
   const selectedLayer = layers.find((l) => l.id === selectedLayerId);
-
-  const handleTrain = () => {
-    if (!puzzleData || layers.length === 0) return;
-    startTraining(
-      {
-        inputs: puzzleData.trainingData.map((d) => d.input),
-        outputs: puzzleData.trainingData.map((d) => d.output),
-      },
-      {
-        epochs: puzzleData.maxEpochs ?? 100,
-        batchSize: 32,
-        learningRate: 0.001,
-        optimizer: 'adam',
-      }
-    );
-  };
 
   return (
     <div className="relative min-h-screen text-text-primary">
@@ -304,7 +280,6 @@ const NetworkBuilder: React.FC = () => {
                   {selectedLayer ? (
                     <LayerConfigEditor
                       layerId={selectedLayerId!}
-                      onClose={() => setShowEditor(false)}
                     />
                   ) : (
                     <div className="space-y-4">
@@ -362,20 +337,16 @@ const NetworkBuilder: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                 >
-                  {trainingSession ? (
-                    <OptimizerPanel
-                      optimizer={trainingSession.optimizer}
-                      learningRate={trainingSession.learningRate || 0.001}
-                      batchSize={trainingSession.batchSize || 32}
-                      epochs={trainingSession.epochs}
-                      onOptimizerChange={(opt) => startTraining({ inputs: [], outputs: [] }, { optimizer: opt })}
-                      onLearningRateChange={(lr) => startTraining({ inputs: [], outputs: [] }, { learningRate: lr })}
-                      onBatchSizeChange={(batch) => startTraining({ inputs: [], outputs: [] }, { batchSize: batch })}
-                      onEpochsChange={(epochs) => startTraining({ inputs: [], outputs: [] }, { epochs })}
-                    />
-                  ) : (
-                    <p className="text-sm text-text-secondary">Configure training parameters before starting.</p>
-                  )}
+                  <OptimizerPanel
+                    optimizer={trainingSession?.optimizer || 'adam'}
+                    learningRate={trainingSession?.learningRate || 0.001}
+                    batchSize={trainingSession?.batchSize || 32}
+                    epochs={trainingSession?.epochs || 100}
+                    onOptimizerChange={(opt) => startTraining({ inputs: [], outputs: [] }, { optimizer: opt })}
+                    onLearningRateChange={(lr) => startTraining({ inputs: [], outputs: [] }, { learningRate: lr })}
+                    onBatchSizeChange={(batch) => startTraining({ inputs: [], outputs: [] }, { batchSize: batch })}
+                    onEpochsChange={(epochs) => startTraining({ inputs: [], outputs: [] }, { epochs })}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useAppStore } from '../stores/appStore';
 
 interface Achievement {
   id: string;

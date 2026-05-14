@@ -13,9 +13,8 @@ const DailyChallenge: React.FC = () => {
   const {
     layers,
     selectedLayerId,
-    isTraining,
-    loss,
-    accuracy,
+    trainingStatus,
+    currentMetrics,
     trainingHistory,
     addLayer,
     removeLayer,
@@ -26,6 +25,10 @@ const DailyChallenge: React.FC = () => {
   } = useNetworkStore();
   const setScreen = useAppStore((state) => state.setScreen);
   const [timeLeft, setTimeLeft] = useState(600);
+
+  const isTraining = trainingStatus === 'training';
+  const loss = currentMetrics.loss;
+  const accuracy = currentMetrics.accuracy;
 
   useEffect(() => {
     visitMode('daily');
@@ -184,7 +187,7 @@ const DailyChallenge: React.FC = () => {
           </div>
           <motion.button
             type="button"
-            onClick={() => (isTraining ? stopTraining() : startTraining(data, 140))}
+            onClick={() => (isTraining ? stopTraining() : startTraining(data, { epochs: 140 }))}
             disabled={layers.length === 0 || timeLeft <= 0}
             className="w-full rounded-xl bg-neural-green py-3 text-sm font-semibold text-bg-app disabled:opacity-45"
             whileHover={{ scale: 1.02 }}

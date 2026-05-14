@@ -52,9 +52,8 @@ const Sandbox: React.FC = () => {
   const {
     layers,
     selectedLayerId,
-    isTraining,
-    loss,
-    accuracy,
+    trainingStatus,
+    currentMetrics,
     trainingHistory,
     addLayer,
     removeLayer,
@@ -65,6 +64,10 @@ const Sandbox: React.FC = () => {
   } = useNetworkStore();
   const setScreen = useAppStore((state) => state.setScreen);
   const [selectedDataset, setSelectedDataset] = useState<string>('XOR');
+
+  const isTraining = trainingStatus === 'training';
+  const loss = currentMetrics.loss;
+  const accuracy = currentMetrics.accuracy;
 
   useEffect(() => {
     visitMode('sandbox');
@@ -211,7 +214,7 @@ const Sandbox: React.FC = () => {
           <motion.button
             type="button"
             onClick={() =>
-              isTraining ? stopTraining() : startTraining(dataset?.data ?? { inputs: [], outputs: [] }, 120)
+              isTraining ? stopTraining() : startTraining(dataset?.data ?? { inputs: [], outputs: [] }, { epochs: 120 })
             }
             disabled={layers.length === 0}
             className="mt-4 w-full rounded-xl bg-neural-green py-3 text-sm font-semibold text-bg-app disabled:opacity-45"

@@ -28,15 +28,12 @@ const CustomPuzzleBuilder: React.FC = () => {
     { input: [1, 0], output: [1] },
     { input: [1, 1], output: [0] },
   ]);
-  const [testData, setTestData] = useState<DataPoint[]>([
-    { input: [0, 0], output: [0] },
-    { input: [1, 1], output: [0] },
-  ]);
+   const [testData] = useState<DataPoint[]>([
+     { input: [0, 0], output: [0] },
+     { input: [1, 1], output: [0] },
+   ]);
 
-  const isBinary = outputSize === 1;
-  const isMultiClass = outputSize > 1;
-
-  const handleCreatePuzzle = () => {
+   const handleCreatePuzzle = () => {
     const puzzle: CustomPuzzle = {
       id: crypto.randomUUID(),
       name,

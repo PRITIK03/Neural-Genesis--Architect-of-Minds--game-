@@ -1,9 +1,7 @@
 import React, { useMemo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Line, Sphere } from '@react-three/drei';
-import * as THREE from 'three';
-import { motion } from 'framer-motion';
-import { useNetworkStore, Layer } from '../stores/networkStore';
+import { Layer } from '../stores/networkStore';
 
 interface NetworkVisualizationProps {
   layers: Layer[];
@@ -34,14 +32,12 @@ const NeuronSphere: React.FC<{
 };
 
 const Connections: React.FC<{
-  fromLayer: number;
-  toLayer: number;
   fromCount: number;
   toCount: number;
   fromY: number;
   toY: number;
   color: string;
-}> = ({ fromLayer, toLayer, fromCount, toCount, fromY, toY, color }) => {
+}> = ({ fromCount, toCount, fromY, toY, color }) => {
   const connections = useMemo(() => {
     const lines: { start: [number, number, number]; end: [number, number, number] }[] = [];
     const spacingFrom = 0.8 / Math.max(fromCount, 4);
@@ -80,9 +76,8 @@ const LayerSpheres: React.FC<{
   layer: Layer;
   index: number;
   totalLayers: number;
-  isSelected: boolean;
   onClick: () => void;
-}> = ({ layer, index, totalLayers, isSelected, onClick }) => {
+}> = ({ layer, index, totalLayers, onClick }) => {
   let count = 0;
   switch (layer.type) {
     case 'dense':
@@ -98,7 +93,6 @@ const LayerSpheres: React.FC<{
       count = 1;
   }
 
-  const spacing = 0.6 / Math.sqrt(Math.max(count, 1));
   const yPos = index * 2 - (totalLayers - 1);
   const getColor = () => {
     switch (layer.type) {
@@ -114,7 +108,6 @@ const LayerSpheres: React.FC<{
 
   return (
     <group position={[0, yPos, 0]}>
-      {/* Render multiple spheres for denser layers */}
       {count > 1 ? (
         Array.from({ length: Math.min(count, 16) }).map((_, i) => {
           const angle = (i / Math.min(count, 16)) * Math.PI * 2;
@@ -149,12 +142,10 @@ const NetworkScene: React.FC<NetworkVisualizationProps> = ({
   layers,
   isTraining = false,
   onLayerClick,
-  selectedLayerId,
   showConnections = true,
 }) => {
   const { camera } = useThree();
 
-  // Auto-adjust camera based on layer count
   React.useEffect(() => {
     const distance = Math.max(12, layers.length * 1.5 + 5);
     camera.position.set(0, 0, distance);
@@ -176,7 +167,6 @@ const NetworkScene: React.FC<NetworkVisualizationProps> = ({
         autoRotateSpeed={0.5}
       />
 
-      {/* Render connections */}
       {showConnections && layers.map((layer, idx) => {
         if (idx === 0) return null;
         const prevLayer = layers[idx - 1];
@@ -197,8 +187,6 @@ const NetworkScene: React.FC<NetworkVisualizationProps> = ({
         return (
           <Connections
             key={`conn-${idx}`}
-            fromLayer={idx - 1}
-            toLayer={idx}
             fromCount={fromCount}
             toCount={toCount}
             fromY={fromY}
@@ -208,14 +196,12 @@ const NetworkScene: React.FC<NetworkVisualizationProps> = ({
         );
       })}
 
-      {/* Render layers */}
       {layers.map((layer, idx) => (
         <LayerSpheres
           key={layer.id}
           layer={layer}
           index={idx}
           totalLayers={totalLayers}
-          isSelected={selectedLayerId === layer.id}
           onClick={() => onLayerClick?.(layer.id)}
         />
       ))}

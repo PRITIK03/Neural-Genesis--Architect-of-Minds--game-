@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNetworkStore } from '../stores/networkStore';
 
 export const ModelManager: React.FC<{
@@ -19,7 +19,7 @@ export const ModelManager: React.FC<{
 
   const handleLoad = (id: string) => {
     loadModel(id);
-    onLoadModel?.();
+    if (onLoadModel) onLoadModel();
   };
 
   const formatDate = (timestamp: number) => {

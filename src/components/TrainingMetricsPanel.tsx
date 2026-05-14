@@ -1,8 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -31,11 +29,10 @@ export const TrainingMetricsPanel: React.FC<TrainingMetricsPanelProps> = ({
     startTraining,
     stopTraining,
     pauseTraining,
-    resumeTraining,
+    trainingSession,
   } = useNetworkStore();
 
   const isTraining = trainingStatus === 'training';
-  const canTrain = trainingHistory.length > 0 || currentMetrics.loss > 0;
 
   const getStatusColor = () => {
     switch (trainingStatus) {
@@ -85,7 +82,6 @@ export const TrainingMetricsPanel: React.FC<TrainingMetricsPanelProps> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Status Indicator */}
       <div className="flex items-center justify-between rounded-lg border border-border-subtle bg-bg-elevated/60 p-3">
         <div className="flex items-center gap-2">
           <div className={`h-2 w-2 rounded-full ${
@@ -106,8 +102,7 @@ export const TrainingMetricsPanel: React.FC<TrainingMetricsPanelProps> = ({
         )}
       </div>
 
-      {/* Metrics Display */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 text-sm">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -131,7 +126,6 @@ export const TrainingMetricsPanel: React.FC<TrainingMetricsPanelProps> = ({
         </motion.div>
       </div>
 
-      {/* Training Controls */}
       {showControls && (
         <div className="flex gap-2">
           {!isTraining ? (
@@ -169,7 +163,6 @@ export const TrainingMetricsPanel: React.FC<TrainingMetricsPanelProps> = ({
         </div>
       )}
 
-      {/* Training History Chart */}
       {showChart && trainingHistory.length > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -225,7 +218,6 @@ export const TrainingMetricsPanel: React.FC<TrainingMetricsPanelProps> = ({
         </motion.div>
       )}
 
-      {/* Early Stopping Indicator */}
       {trainingHistory.length > 0 && trainingStatus === 'completed' && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
