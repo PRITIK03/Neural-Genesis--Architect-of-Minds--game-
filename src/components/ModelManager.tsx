@@ -19,7 +19,7 @@ export const ModelManager: React.FC<{
 
   const handleLoad = (id: string) => {
     loadModel(id);
-    if (onLoadModel) onLoadModel();
+    if (onLoadModel) onLoadModel(id);
   };
 
   const formatDate = (timestamp: number) => {

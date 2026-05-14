@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useAppStore } from '../stores/appStore';
 import { NeuralBackdrop } from '../components/NeuralBackdrop';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { AchievementGrid } from '../components/Achievements/AchievementBadge';
 import { loadProgress } from '../lib/playerProgress';
 
 const ACHIEVEMENTS = [
