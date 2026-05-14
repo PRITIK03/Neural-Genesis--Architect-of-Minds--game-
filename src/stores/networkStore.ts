@@ -9,6 +9,10 @@ export interface TrainingSession {
   optimizer: OptimizerType;
 }
 
+export interface LayerConfig {
+  [key: string]: any;
+}
+
 export interface Layer {
   id: string;
   type: 'dense' | 'conv2d' | 'dropout' | 'batchNorm' | 'pooling' | 'flatten';
@@ -45,7 +49,15 @@ export interface TrainingMetrics {
   learningRate?: number;
 }
 
-interface NetworkState {
+// Legacy properties for backward compatibility
+export interface LegacyMetrics {
+  loss: number;
+  accuracy: number;
+  isTraining: boolean;
+  trainingHistory: { epoch: number; loss: number; accuracy: number }[];
+}
+
+interface NetworkState extends LegacyMetrics {
   layers: Layer[];
   selectedLayerId: string | null;
   currentLevelId: string | null;
@@ -77,84 +89,6 @@ interface NetworkState {
   moveLayer: (id: string, direction: 'up' | 'down') => void;
 }
 
-export interface Conv2DLayerConfig {
-  filters: number;
-  kernelSize: number;
-  strides?: number;
-  activation: 'relu' | 'sigmoid' | 'tanh';
-}
-
-export interface DropoutLayerConfig {
-  rate: number;
-}
-
-export interface BatchNormLayerConfig {
-  momentum?: number;
-  epsilon?: number;
-}
-
-export interface PoolingLayerConfig {
-  poolSize: number;
-  strides?: number;
-  type: 'max' | 'average';
-}
-
-export interface FlattenLayerConfig {}
-
-export type LayerConfig =
-  | DenseLayerConfig
-  | Conv2DLayerConfig
-  | DropoutLayerConfig
-  | BatchNormLayerConfig
-  | PoolingLayerConfig
-  | FlattenLayerConfig;
-
-export interface Layer {
-  id: string;
-  type: 'dense' | 'conv2d' | 'dropout' | 'batchNorm' | 'pooling' | 'flatten';
-  config: LayerConfig;
-}
-
-export interface TrainingData {
-  inputs: number[][];
-  outputs: number[][];
-}
-
-export interface CustomPuzzle {
-  id: string;
-  name: string;
-  description: string;
-  inputShape: number[];
-  outputShape: number[];
-  trainingData: { input: number[]; output: number[] }[];
-  testData: { input: number[]; output: number[] }[];
-  accuracyThreshold: number;
-  maxEpochs: number;
-  maxLayers: number;
-  maxNeurons: number;
-}
-
-interface NetworkState {
-  layers: Layer[];
-  selectedLayerId: string | null;
-  currentLevelId: string | null;
-  customPuzzle: CustomPuzzle | null;
-  isTraining: boolean;
-  loss: number;
-  accuracy: number;
-  trainingHistory: { epoch: number; loss: number; accuracy: number }[];
-  worker: Worker | null;
-  addLayer: (layer: Layer) => void;
-  removeLayer: (id: string) => void;
-  updateLayer: (id: string, config: Record<string, any>) => void;
-  setSelectedLayer: (id: string | null) => void;
-  setCurrentLevel: (id: string) => void;
-  setCustomPuzzle: (puzzle: CustomPuzzle | null) => void;
-  startTraining: (data: TrainingData, epochs: number) => void;
-  stopTraining: () => void;
-  clearWorkspace: () => void;
-}
-
 export const useNetworkStore = create<NetworkState>((set, get) => ({
   layers: [],
   selectedLayerId: null,
@@ -167,6 +101,14 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
   savedModels: [],
   worker: null,
   error: null,
+  // Legacy getters - these will be accessed as properties
+  get isTraining() { return get().trainingStatus === 'training'; },
+  get loss() { return get().currentMetrics.loss; },
+  get accuracy() { return get().currentMetrics.accuracy; },
+  get legacyTrainingHistory() {
+    return get().trainingHistory.map(h => ({ epoch: h.epoch, loss: h.loss, accuracy: h.accuracy }));
+  },
+
   addLayer: (layer) => set((state) => ({ layers: [...state.layers, layer] })),
 
   removeLayer: (id) =>
@@ -217,6 +159,7 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
       error: null,
     });
   },
+
   startTraining: (data, sessionOverride) => {
     const { layers, trainingSession } = get();
     if (layers.length === 0) return;
@@ -244,9 +187,9 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
     });
 
     worker.onmessage = (e) => {
-      const { type, epoch, loss, accuracy, error } = e.data;
+      const { type, epoch, loss, accuracy, error: err } = e.data;
       if (type === 'error') {
-        set({ trainingStatus: 'stopped', error });
+        set({ trainingStatus: 'stopped', error: err });
         worker.terminate();
         set({ worker: null });
         return;
@@ -266,8 +209,6 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
           trainingStatus: 'completed',
           currentMetrics: { loss, accuracy },
         });
-        // Store weights for visualization
-        // Note: weights would come in the message, but keeping simple for now
         worker.terminate();
         set({ worker: null });
       } else if (type === 'paused') {
@@ -276,6 +217,58 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
         set({ trainingStatus: 'training' });
       }
     };
+  },
+
+  stopTraining: () => {
+    const { worker } = get();
+    if (worker) {
+      worker.postMessage({ type: 'stop' });
+      set({ trainingStatus: 'stopped' });
+    }
+  },
+
+  pauseTraining: () => {
+    const { worker } = get();
+    if (worker) {
+      worker.postMessage({ type: 'pause' });
+    }
+  },
+
+  resumeTraining: () => {
+    const { worker } = get();
+    if (worker) {
+      worker.postMessage({ type: 'resume' });
+    }
+  },
+
+  clearWorkspace: () => {
+    const { worker } = get();
+    worker?.terminate();
+    set({
+      worker: null,
+      layers: [],
+      selectedLayerId: null,
+      trainingHistory: [],
+      currentMetrics: { loss: 0, accuracy: 0 },
+      trainingStatus: 'idle',
+      trainingSession: null,
+      error: null,
+      currentLevelId: null,
+      customPuzzle: null,
+    });
+  },
+
+  saveModel: (name) => {
+    const { layers } = get();
+    const model = {
+      id: crypto.randomUUID(),
+      name,
+      layers: [...layers],
+      timestamp: Date.now(),
+    };
+    set((state) => ({
+      savedModels: [...state.savedModels, model],
+    }));
   },
 
   loadModel: (id) => {
@@ -334,60 +327,6 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
       const newLayers = [...state.layers];
       [newLayers[index], newLayers[newIndex]] = [newLayers[newIndex], newLayers[index]];
       return { layers: newLayers };
-    });
-  },
-}));
-      } else if (type === 'done') {
-        set({
-          trainingStatus: 'completed',
-          currentMetrics: { loss, accuracy },
-        });
-        worker.terminate();
-        set({ worker: null });
-      } else if (type === 'paused') {
-        set({ trainingStatus: 'paused' });
-      } else if (type === 'resumed') {
-        set({ trainingStatus: 'training' });
-      }
-    };
-  },
-
-  stopTraining: () => {
-    const { worker } = get();
-    if (worker) {
-      worker.postMessage({ type: 'stop' });
-      set({ trainingStatus: 'stopped' });
-    }
-  },
-
-  pauseTraining: () => {
-    const { worker } = get();
-    if (worker) {
-      worker.postMessage({ type: 'pause' });
-    }
-  },
-
-  resumeTraining: () => {
-    const { worker } = get();
-    if (worker) {
-      worker.postMessage({ type: 'resume' });
-    }
-  },
-
-  clearWorkspace: () => {
-    const { worker } = get();
-    worker?.terminate();
-    set({
-      worker: null,
-      layers: [],
-      selectedLayerId: null,
-      trainingHistory: [],
-      currentMetrics: { loss: 0, accuracy: 0 },
-      trainingStatus: 'idle',
-      trainingSession: null,
-      error: null,
-      currentLevelId: null,
-      customPuzzle: null,
     });
   },
 }));
