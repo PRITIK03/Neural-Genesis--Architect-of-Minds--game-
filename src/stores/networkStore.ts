@@ -77,9 +77,10 @@ interface NetworkState extends LegacyMetrics {
   setCustomPuzzle: (puzzle: CustomPuzzle | null) => void;
   startTraining: (data: TrainingData, session?: Partial<TrainingSession>) => void;
   stopTraining: () => void;
-  pauseTraining: () => void;
+   pauseTraining: () => void;
   resumeTraining: () => void;
   clearWorkspace: () => void;
+  updateSession: (patch: Partial<TrainingSession>) => void;
   saveModel: (name: string) => void;
   loadModel: (id: string) => void;
   deleteModel: (id: string) => void;
@@ -256,6 +257,12 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
       currentLevelId: null,
       customPuzzle: null,
     });
+  },
+
+  updateSession: (patch) => {
+    set((state) => ({
+      trainingSession: state.trainingSession ? { ...state.trainingSession, ...patch } : null,
+    }));
   },
 
   saveModel: (name) => {

@@ -27,6 +27,7 @@ const NetworkBuilder: React.FC = () => {
     startTraining,
     duplicateLayer,
     moveLayer,
+    updateSession,
   } = useNetworkStore();
   const setScreen = useAppStore((state) => state.setScreen);
   const [activeTab, setActiveTab] = useState<SidebarTab>('layers');
@@ -342,22 +343,10 @@ const NetworkBuilder: React.FC = () => {
                     learningRate={trainingSession?.learningRate || 0.001}
                     batchSize={trainingSession?.batchSize || 32}
                     epochs={trainingSession?.epochs || 100}
-                    onOptimizerChange={(opt) => useNetworkStore.getState().startTraining(
-                      { inputs: [], outputs: [] },
-                      { optimizer: opt }
-                    )}
-                    onLearningRateChange={(lr) => useNetworkStore.getState().startTraining(
-                      { inputs: [], outputs: [] },
-                      { learningRate: lr }
-                    )}
-                    onBatchSizeChange={(batch) => useNetworkStore.getState().startTraining(
-                      { inputs: [], outputs: [] },
-                      { batchSize: batch }
-                    )}
-                    onEpochsChange={(epochs) => useNetworkStore.getState().startTraining(
-                      { inputs: [], outputs: [] },
-                      { epochs }
-                    )}
+                    onOptimizerChange={(opt) => updateSession({ optimizer: opt })}
+                    onLearningRateChange={(lr) => updateSession({ learningRate: lr })}
+                    onBatchSizeChange={(batch) => updateSession({ batchSize: batch })}
+                    onEpochsChange={(epochs) => updateSession({ epochs })}
                   />
                 </motion.div>
               )}
