@@ -102,6 +102,13 @@ const ProfileAchievements: React.FC = () => {
   const unlockedCount = unlockedAchievements.length;
   const totalCount = ACHIEVEMENTS.length;
 
+  const colorMap: Record<string, string> = {
+    'neural-blue': 'text-neural-blue',
+    'neural-purple': 'text-neural-purple',
+    'neural-green': 'text-neural-green',
+    'neural-yellow': 'text-neural-yellow',
+  };
+
   return (
     <div className="relative min-h-screen px-4 py-10 text-text-primary md:px-10">
       <NeuralBackdrop />
@@ -133,11 +140,9 @@ const ProfileAchievements: React.FC = () => {
               className="rounded-xl border border-border-subtle bg-bg-elevated/60 p-4 text-center"
             >
               <p className="text-xs font-semibold uppercase tracking-wide text-text-dim">{stat.label}</p>
-              <p className={`mt-1 text-2xl font-bold ${stat.color === 'neural-blue' ? 'text-neural-blue'
-                : stat.color === 'neural-purple' ? 'text-neural-purple'
-                : stat.color === 'neural-green' ? 'text-neural-green'
-                : 'text-neural-yellow'
-              }`}>{stat.value}</p>
+              <p className={`mt-1 text-2xl font-bold ${colorMap[stat.color] || 'text-text-primary'}`}>
+                {stat.value}
+              </p>
             </motion.div>
           ))}
         </motion.div>
@@ -238,12 +243,6 @@ const ProfileAchievements: React.FC = () => {
       </div>
     </div>
   );
-};
-
-
-const item = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
 export default ProfileAchievements;

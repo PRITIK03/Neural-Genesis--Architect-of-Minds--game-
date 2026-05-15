@@ -24,7 +24,6 @@ const NetworkBuilder: React.FC = () => {
     addLayer,
     removeLayer,
     setSelectedLayer,
-    startTraining,
     duplicateLayer,
     moveLayer,
     updateSession,
