@@ -133,7 +133,11 @@ const ProfileAchievements: React.FC = () => {
               className="rounded-xl border border-border-subtle bg-bg-elevated/60 p-4 text-center"
             >
               <p className="text-xs font-semibold uppercase tracking-wide text-text-dim">{stat.label}</p>
-              <p className={`mt-1 text-2xl font-bold text-${stat.color}`}>{stat.value}</p>
+              <p className={`mt-1 text-2xl font-bold ${stat.color === 'neural-blue' ? 'text-neural-blue'
+                : stat.color === 'neural-purple' ? 'text-neural-purple'
+                : stat.color === 'neural-green' ? 'text-neural-green'
+                : 'text-neural-yellow'
+              }`}>{stat.value}</p>
             </motion.div>
           ))}
         </motion.div>
