@@ -23,30 +23,26 @@ export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
   onBatchSizeChange,
   onEpochsChange,
 }) => {
-  const optimizers: { value: OptimizerType; label: string; description: string; color: string }[] = [
+  const optimizers: { value: OptimizerType; label: string; description: string }[] = [
     {
       value: 'adam',
       label: 'Adam',
       description: 'Adaptive learning rate (default)',
-      color: 'neural-blue',
     },
     {
       value: 'sgd',
       label: 'SGD',
       description: 'Stochastic Gradient Descent',
-      color: 'neural-purple',
     },
     {
       value: 'rmsprop',
       label: 'RMSprop',
       description: 'Adaptive with momentum',
-      color: 'neural-green',
     },
     {
       value: 'adagrad',
       label: 'Adagrad',
       description: 'Per-parameter adaptive',
-      color: 'neural-yellow',
     },
   ];
 
@@ -65,13 +61,25 @@ export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
               onClick={() => onOptimizerChange(opt.value)}
               className={`rounded-lg border p-3 text-left transition-all ${
                 optimizer === opt.value
-                  ? `border-${opt.color} bg-${opt.color}/10`
+                  ? opt.value === 'adam'
+                    ? 'border-neural-blue bg-neural-blue/10 text-neural-blue'
+                    : opt.value === 'sgd'
+                      ? 'border-neural-purple bg-neural-purple/10 text-neural-purple'
+                      : opt.value === 'rmsprop'
+                        ? 'border-neural-green bg-neural-green/10 text-neural-green'
+                        : 'border-neural-yellow bg-neural-yellow/10 text-neural-yellow'
                   : 'border-border-subtle bg-bg-elevated hover:border-border-subtle/80'
               }`}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
             >
-              <div className={`text-sm font-bold ${optimizer === opt.value ? `text-${opt.color}` : 'text-text-primary'}`}>
+              <div className={`text-sm font-bold ${optimizer === opt.value
+                ? (opt.value === 'adam' ? 'text-neural-blue' :
+                   opt.value === 'sgd' ? 'text-neural-purple' :
+                   opt.value === 'rmsprop' ? 'text-neural-green' :
+                   'text-neural-yellow')
+                : 'text-text-primary'}`}
+              >
                 {opt.label}
               </div>
               <p className="mt-0.5 text-xs text-text-dim">{opt.description}</p>

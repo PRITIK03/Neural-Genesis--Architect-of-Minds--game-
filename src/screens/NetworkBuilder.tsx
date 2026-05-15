@@ -147,12 +147,12 @@ const NetworkBuilder: React.FC = () => {
                 disabled={atLayerCap}
                 onClick={() => handleAddLayer(btn.type)}
                 className={`rounded-xl py-2.5 text-xs font-semibold text-bg-app disabled:opacity-40
-                  ${btn.color === 'blue' ? 'bg-neural-blue neon-glow' :
-                btn.color === 'purple' ? 'bg-neural-purple neon-glow-purple' :
-                btn.color === 'green' ? 'bg-neural-green' :
-                btn.color === 'yellow' ? 'bg-neural-yellow text-bg-app' :
-                btn.color === 'orange' ? 'bg-neural-orange' :
-                'bg-gray-500'}`}
+                ${btn.color === 'blue' ? 'bg-neural-blue hover:bg-neural-blue neon-glow' :
+                btn.color === 'purple' ? 'bg-neural-purple hover:bg-neural-purple neon-glow-purple' :
+                btn.color === 'green' ? 'bg-neural-green hover:bg-neural-green' :
+                btn.color === 'yellow' ? 'bg-neural-yellow hover:bg-neural-yellow text-bg-app' :
+                btn.color === 'orange' ? 'bg-neural-orange hover:bg-neural-orange' :
+                'bg-gray-500 hover:bg-gray-500'}`}
                 whileHover={atLayerCap ? {} : { scale: 1.02 }}
                 whileTap={atLayerCap ? {} : { scale: 0.98 }}
               >
@@ -224,7 +224,7 @@ const NetworkBuilder: React.FC = () => {
                   Epochs ≤ {puzzleData.maxEpochs ?? 100}
                 </span>
                 <span className="rounded-full border border-neural-green/30 bg-neural-green/10 px-2 py-1 font-medium text-neural-green">
-                  Target {(puzzleData.accuracyThreshold * 100).toFixed(0)}%+
+                  Target {(puzzleData.accuracyThreshold * 100).toFixed(0)}%
                 </span>
               </div>
             </motion.div>
@@ -342,10 +342,22 @@ const NetworkBuilder: React.FC = () => {
                     learningRate={trainingSession?.learningRate || 0.001}
                     batchSize={trainingSession?.batchSize || 32}
                     epochs={trainingSession?.epochs || 100}
-                    onOptimizerChange={(opt) => startTraining({ inputs: [], outputs: [] }, { optimizer: opt })}
-                    onLearningRateChange={(lr) => startTraining({ inputs: [], outputs: [] }, { learningRate: lr })}
-                    onBatchSizeChange={(batch) => startTraining({ inputs: [], outputs: [] }, { batchSize: batch })}
-                    onEpochsChange={(epochs) => startTraining({ inputs: [], outputs: [] }, { epochs })}
+                    onOptimizerChange={(opt) => useNetworkStore.getState().startTraining(
+                      { inputs: [], outputs: [] },
+                      { optimizer: opt }
+                    )}
+                    onLearningRateChange={(lr) => useNetworkStore.getState().startTraining(
+                      { inputs: [], outputs: [] },
+                      { learningRate: lr }
+                    )}
+                    onBatchSizeChange={(batch) => useNetworkStore.getState().startTraining(
+                      { inputs: [], outputs: [] },
+                      { batchSize: batch }
+                    )}
+                    onEpochsChange={(epochs) => useNetworkStore.getState().startTraining(
+                      { inputs: [], outputs: [] },
+                      { epochs }
+                    )}
                   />
                 </motion.div>
               )}

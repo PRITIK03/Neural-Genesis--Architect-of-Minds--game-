@@ -6,6 +6,11 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { AchievementGrid } from '../components/Achievements/AchievementBadge';
 import { loadProgress } from '../lib/playerProgress';
 
+const item = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+
 const ACHIEVEMENTS = [
   {
     id: 'first-level',
