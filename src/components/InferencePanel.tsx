@@ -19,7 +19,8 @@ export const InferencePanel: React.FC<InferencePanelProps> = ({
   const [isInferencing, setIsInferencing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const inputSize = trainingData[0]?.input.length || layers[0]?.type === 'dense' ? (layers[0].config as any).units || 1 : 1;
+  const inputSize = trainingData[0]?.input.length
+    ?? (layers[0]?.type === 'dense' ? (layers[0].config as any).units || 1 : 1);
 
   const sampleInputs = useMemo(() => {
     return trainingData.slice(0, 5).map((d, i) => ({
@@ -53,7 +54,7 @@ export const InferencePanel: React.FC<InferencePanelProps> = ({
       }
 
       // Output layer
-      const outputSize = trainingData[0].output.length;
+      const outputSize = trainingData[0]?.output.length || 1;
       model.add(tf.layers.dense({ units: outputSize, activation: outputSize > 1 ? 'softmax' : 'sigmoid' }));
 
       // Dummy inference with random weights (since we don't have trained weights)

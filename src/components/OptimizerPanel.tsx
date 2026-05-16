@@ -13,6 +13,13 @@ interface OptimizerPanelProps {
   onEpochsChange: (epochs: number) => void;
 }
 
+const OPTIMIZER_COLORS: Record<OptimizerType, { border: string; bg: string; text: string }> = {
+  adam: { border: 'border-neural-blue', bg: 'bg-neural-blue/10', text: 'text-neural-blue' },
+  sgd: { border: 'border-neural-purple', bg: 'bg-neural-purple/10', text: 'text-neural-purple' },
+  rmsprop: { border: 'border-neural-green', bg: 'bg-neural-green/10', text: 'text-neural-green' },
+  adagrad: { border: 'border-neural-yellow', bg: 'bg-neural-yellow/10', text: 'text-neural-yellow' },
+};
+
 export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
   optimizer,
   learningRate,
@@ -24,26 +31,10 @@ export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
   onEpochsChange,
 }) => {
   const optimizers: { value: OptimizerType; label: string; description: string }[] = [
-    {
-      value: 'adam',
-      label: 'Adam',
-      description: 'Adaptive learning rate (default)',
-    },
-    {
-      value: 'sgd',
-      label: 'SGD',
-      description: 'Stochastic Gradient Descent',
-    },
-    {
-      value: 'rmsprop',
-      label: 'RMSprop',
-      description: 'Adaptive with momentum',
-    },
-    {
-      value: 'adagrad',
-      label: 'Adagrad',
-      description: 'Per-parameter adaptive',
-    },
+    { value: 'adam', label: 'Adam', description: 'Adaptive learning rate (default)' },
+    { value: 'sgd', label: 'SGD', description: 'Stochastic Gradient Descent' },
+    { value: 'rmsprop', label: 'RMSprop', description: 'Adaptive with momentum' },
+    { value: 'adagrad', label: 'Adagrad', description: 'Per-parameter adaptive' },
   ];
 
   return (
@@ -54,37 +45,29 @@ export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
           Optimizer
         </label>
         <div className="grid grid-cols-2 gap-2">
-          {optimizers.map((opt) => (
-            <motion.button
-              key={opt.value}
-              type="button"
-              onClick={() => onOptimizerChange(opt.value)}
-              className={`rounded-lg border p-3 text-left transition-all ${
-                optimizer === opt.value
-                  ? opt.value === 'adam'
-                    ? 'border-neural-blue bg-neural-blue/10 text-neural-blue'
-                    : opt.value === 'sgd'
-                      ? 'border-neural-purple bg-neural-purple/10 text-neural-purple'
-                      : opt.value === 'rmsprop'
-                        ? 'border-neural-green bg-neural-green/10 text-neural-green'
-                        : 'border-neural-yellow bg-neural-yellow/10 text-neural-yellow'
-                  : 'border-border-subtle bg-bg-elevated hover:border-border-subtle/80'
-              }`}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-            >
-              <div className={`text-sm font-bold ${optimizer === opt.value
-                ? (opt.value === 'adam' ? 'text-neural-blue' :
-                   opt.value === 'sgd' ? 'text-neural-purple' :
-                   opt.value === 'rmsprop' ? 'text-neural-green' :
-                   'text-neural-yellow')
-                : 'text-text-primary'}`}
+          {optimizers.map((opt) => {
+            const colors = OPTIMIZER_COLORS[opt.value];
+            const isSelected = optimizer === opt.value;
+            return (
+              <motion.button
+                key={opt.value}
+                type="button"
+                onClick={() => onOptimizerChange(opt.value)}
+                className={`rounded-lg border p-3 text-left transition-all ${
+                  isSelected
+                    ? `${colors.border} ${colors.bg} ${colors.text}`
+                    : 'border-border-subtle bg-bg-elevated hover:border-border-subtle/80'
+                }`}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
-                {opt.label}
-              </div>
-              <p className="mt-0.5 text-xs text-text-dim">{opt.description}</p>
-            </motion.button>
-          ))}
+                <div className={`text-sm font-bold ${isSelected ? colors.text : 'text-text-primary'}`}>
+                  {opt.label}
+                </div>
+                <p className="mt-0.5 text-xs text-text-dim">{opt.description}</p>
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 

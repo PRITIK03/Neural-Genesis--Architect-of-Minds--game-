@@ -94,12 +94,12 @@ export const TrainingMetricsPanel: React.FC<TrainingMetricsPanelProps> = ({
             {getStatusLabel()}
           </span>
         </div>
-        {trainingSession && (
-          <div className="flex gap-2 text-xs text-text-dim">
-            <span>LR: {trainingSession.learningRate}</span>
-            <span>Batch: {trainingSession.batchSize}</span>
-          </div>
-        )}
+{trainingSession && (
+           <div className="flex gap-2 text-xs text-text-dim">
+             <span>LR: {trainingSession.learningRate ?? '0.001'}</span>
+             <span>Batch: {trainingSession.batchSize ?? 32}</span>
+           </div>
+         )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-sm">
