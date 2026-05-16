@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNetworkStore, Layer } from '../stores/networkStore';
+import { NumberInput, OptionButtons } from './ui/NumberInput';
+import { LAYER_LIMITS, ACTIVATIONS, ACTIVATIONS_CONV, POOLING_TYPES } from '../lib/constants';
 
 interface LayerConfigEditorProps {
   layerId: string;
@@ -22,68 +24,42 @@ export const LayerConfigEditor: React.FC<LayerConfigEditorProps> = ({ layerId, o
 
   const renderDenseConfig = () => (
     <div className="space-y-4">
-      <div>
-        <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Units</label>
-        <input
-          type="range"
-          min={1}
-          max={1024}
-          step={1}
-          value={(layer.config as any).units || 10}
-          onChange={(e) => handleChange('units', Number(e.target.value))}
-          className="h-2 w-full cursor-pointer accent-neural-blue"
-        />
-        <div className="mt-1 flex justify-between text-xs text-text-dim">
-          <span>1</span>
-          <span className="font-mono text-neural-blue">{(layer.config as any).units || 10}</span>
-          <span>1024</span>
-        </div>
-      </div>
+      <NumberInput
+        label="Units"
+        value={(layer.config as any).units || 10}
+        min={LAYER_LIMITS.minUnits}
+        max={LAYER_LIMITS.maxUnits}
+        step={1}
+        onChange={(v) => handleChange('units', v)}
+        color="neural-blue"
+      />
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Activation</label>
-        <div className="grid grid-cols-2 gap-2">
-          {(['relu', 'sigmoid', 'tanh', 'linear'] as const).map((act) => (
-            <button
-              key={act}
-              type="button"
-              onClick={() => handleChange('activation', act)}
-              className={`rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
-                (layer.config as any).activation === act
-                  ? 'border-neural-blue bg-neural-blue/20 text-neural-blue'
-                  : 'border-border-subtle bg-bg-elevated text-text-secondary hover:border-neural-blue/40'
-              }`}
-            >
-              {act.toUpperCase()}
-            </button>
-          ))}
-        </div>
+        <OptionButtons
+          options={ACTIVATIONS}
+          value={((layer.config as any).activation || 'relu') as 'relu' | 'sigmoid' | 'tanh' | 'linear'}
+          onChange={(v) => handleChange('activation', v)}
+          color="neural-blue"
+        />
       </div>
     </div>
   );
 
   const renderConv2DConfig = () => (
     <div className="space-y-4">
-      <div>
-        <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Filters</label>
-        <input
-          type="range"
-          min={1}
-          max={256}
-          step={1}
-          value={(layer.config as any).filters || 16}
-          onChange={(e) => handleChange('filters', Number(e.target.value))}
-          className="h-2 w-full cursor-pointer accent-neural-purple"
-        />
-        <div className="mt-1 flex justify-between text-xs text-text-dim">
-          <span>1</span>
-          <span className="font-mono text-neural-purple">{(layer.config as any).filters || 16}</span>
-          <span>256</span>
-        </div>
-      </div>
+      <NumberInput
+        label="Filters"
+        value={(layer.config as any).filters || 16}
+        min={LAYER_LIMITS.minFilters}
+        max={LAYER_LIMITS.maxFilters}
+        step={1}
+        onChange={(v) => handleChange('filters', v)}
+        color="neural-purple"
+      />
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Kernel Size</label>
         <div className="flex gap-2">
-          {[1, 2, 3, 5, 7].map((size) => (
+          {LAYER_LIMITS.kernelSizes.map((size) => (
             <button
               key={size}
               type="button"
@@ -101,45 +77,29 @@ export const LayerConfigEditor: React.FC<LayerConfigEditorProps> = ({ layerId, o
       </div>
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Activation</label>
-        <div className="grid grid-cols-3 gap-2">
-          {(['relu', 'sigmoid', 'tanh'] as const).map((act) => (
-            <button
-              key={act}
-              type="button"
-              onClick={() => handleChange('activation', act)}
-              className={`rounded-lg border px-2 py-1.5 text-xs font-medium transition-all ${
-                (layer.config as any).activation === act
-                  ? 'border-neural-purple bg-neural-purple/20 text-neural-purple'
-                  : 'border-border-subtle bg-bg-elevated text-text-secondary hover:border-neural-purple/40'
-              }`}
-            >
-              {act.toUpperCase()}
-            </button>
-          ))}
-        </div>
+        <OptionButtons
+          options={ACTIVATIONS_CONV}
+          value={((layer.config as any).activation || 'relu') as 'relu' | 'sigmoid' | 'tanh'}
+          onChange={(v) => handleChange('activation', v)}
+          color="neural-purple"
+          className="grid grid-cols-3 gap-2"
+        />
       </div>
     </div>
   );
 
   const renderDropoutConfig = () => (
     <div className="space-y-4">
-      <div>
-        <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Dropout Rate</label>
-        <input
-          type="range"
-          min={0}
-          max={0.9}
-          step={0.05}
-          value={(layer.config as any).rate || 0.2}
-          onChange={(e) => handleChange('rate', Number(e.target.value))}
-          className="h-2 w-full cursor-pointer accent-neural-green"
-        />
-        <div className="mt-1 flex justify-between text-xs text-text-dim">
-          <span>0%</span>
-          <span className="font-mono text-neural-green">{Math.round(((layer.config as any).rate || 0.2) * 100)}%</span>
-          <span>90%</span>
-        </div>
-      </div>
+      <NumberInput
+        label="Dropout Rate"
+        value={(layer.config as any).rate || 0.2}
+        min={LAYER_LIMITS.minDropoutRate}
+        max={LAYER_LIMITS.maxDropoutRate}
+        step={0.05}
+        onChange={(v) => handleChange('rate', v)}
+        color="neural-green"
+        formatValue={(v) => `${Math.round(v * 100)}%`}
+      />
       <p className="text-xs text-text-dim">
         Dropout randomly disables neurons during training to prevent overfitting. Typical values: 0.2-0.5.
       </p>
@@ -148,23 +108,15 @@ export const LayerConfigEditor: React.FC<LayerConfigEditorProps> = ({ layerId, o
 
   const renderBatchNormConfig = () => (
     <div className="space-y-4">
-      <div>
-        <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Momentum</label>
-        <input
-          type="range"
-          min={0.8}
-          max={0.999}
-          step={0.001}
-          value={(layer.config as any).momentum || 0.99}
-          onChange={(e) => handleChange('momentum', Number(e.target.value))}
-          className="h-2 w-full cursor-pointer accent-neural-yellow"
-        />
-        <div className="mt-1 flex justify-between text-xs text-text-dim">
-          <span>0.80</span>
-          <span className="font-mono text-neural-yellow">{(layer.config as any).momentum || 0.99}</span>
-          <span>0.999</span>
-        </div>
-      </div>
+      <NumberInput
+        label="Momentum"
+        value={(layer.config as any).momentum || 0.99}
+        min={LAYER_LIMITS.minMomentum}
+        max={LAYER_LIMITS.maxMomentum}
+        step={0.001}
+        onChange={(v) => handleChange('momentum', v)}
+        color="neural-yellow"
+      />
       <p className="text-xs text-text-dim">
         Batch normalization stabilizes and accelerates training by normalizing layer inputs.
       </p>
@@ -175,40 +127,24 @@ export const LayerConfigEditor: React.FC<LayerConfigEditorProps> = ({ layerId, o
     <div className="space-y-4">
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Pooling Type</label>
-        <div className="grid grid-cols-2 gap-2">
-          {(['max', 'average'] as const).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => handleChange('type', type)}
-              className={`rounded-lg border px-3 py-2 text-xs font-medium capitalize transition-all ${
-                (layer.config as any).type === type
-                  ? 'border-neural-orange bg-neural-orange/20 text-neural-orange'
-                  : 'border-border-subtle bg-bg-elevated text-text-secondary hover:border-neural-orange/40'
-              }`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Pool Size</label>
-        <input
-          type="range"
-          min={2}
-          max={4}
-          step={1}
-          value={(layer.config as any).poolSize || 2}
-          onChange={(e) => handleChange('poolSize', Number(e.target.value))}
-          className="h-2 w-full cursor-pointer accent-neural-orange"
+        <OptionButtons
+          options={POOLING_TYPES}
+          value={((layer.config as any).type || 'max') as 'max' | 'average'}
+          onChange={(v) => handleChange('type', v)}
+          color="neural-orange"
+          formatLabel={(v) => v.charAt(0).toUpperCase() + v.slice(1)}
         />
-        <div className="mt-1 flex justify-between text-xs text-text-dim">
-          <span>2×2</span>
-          <span className="font-mono text-neural-orange">{(layer.config as any).poolSize || 2}×{(layer.config as any).poolSize || 2}</span>
-          <span>4×4</span>
-        </div>
       </div>
+      <NumberInput
+        label="Pool Size"
+        value={(layer.config as any).poolSize || 2}
+        min={LAYER_LIMITS.minPoolSize}
+        max={LAYER_LIMITS.maxPoolSize}
+        step={1}
+        onChange={(v) => handleChange('poolSize', v)}
+        color="neural-orange"
+        formatValue={(v) => `${v}×${v}`}
+      />
     </div>
   );
 

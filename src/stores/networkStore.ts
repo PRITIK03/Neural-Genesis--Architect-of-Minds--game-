@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { DEFAULT_SESSION } from '../lib/constants';
 
 export type OptimizerType = 'adam' | 'sgd' | 'rmsprop' | 'adagrad';
 
@@ -165,14 +166,7 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
     const { layers, trainingSession } = get();
     if (layers.length === 0) return;
 
-    const defaultSession: TrainingSession = {
-      epochs: 100,
-      batchSize: 32,
-      learningRate: 0.001,
-      optimizer: 'adam',
-    };
-
-    const session = { ...defaultSession, ...trainingSession, ...sessionOverride };
+    const session = { ...DEFAULT_SESSION, ...trainingSession, ...sessionOverride };
 
     const worker = new Worker(new URL('../workers/trainingWorker.ts', import.meta.url));
     set({ worker, trainingStatus: 'training', trainingHistory: [], trainingSession: session, error: null, currentMetrics: { loss: 0, accuracy: 0 } });

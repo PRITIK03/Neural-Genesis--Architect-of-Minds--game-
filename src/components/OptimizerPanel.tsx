@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { OptimizerType } from '../stores/networkStore';
+import { BATCH_SIZES } from '../lib/constants';
 
 interface OptimizerPanelProps {
   optimizer: OptimizerType;
@@ -20,6 +21,13 @@ const OPTIMIZER_COLORS: Record<OptimizerType, { border: string; bg: string; text
   adagrad: { border: 'border-neural-yellow', bg: 'bg-neural-yellow/10', text: 'text-neural-yellow' },
 };
 
+const OPTIMIZERS: { value: OptimizerType; label: string; description: string }[] = [
+  { value: 'adam', label: 'Adam', description: 'Adaptive learning rate (default)' },
+  { value: 'sgd', label: 'SGD', description: 'Stochastic Gradient Descent' },
+  { value: 'rmsprop', label: 'RMSprop', description: 'Adaptive with momentum' },
+  { value: 'adagrad', label: 'Adagrad', description: 'Per-parameter adaptive' },
+];
+
 export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
   optimizer,
   learningRate,
@@ -30,13 +38,6 @@ export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
   onBatchSizeChange,
   onEpochsChange,
 }) => {
-  const optimizers: { value: OptimizerType; label: string; description: string }[] = [
-    { value: 'adam', label: 'Adam', description: 'Adaptive learning rate (default)' },
-    { value: 'sgd', label: 'SGD', description: 'Stochastic Gradient Descent' },
-    { value: 'rmsprop', label: 'RMSprop', description: 'Adaptive with momentum' },
-    { value: 'adagrad', label: 'Adagrad', description: 'Per-parameter adaptive' },
-  ];
-
   return (
     <div className="space-y-5">
       {/* Optimizer Selection */}
@@ -45,7 +46,7 @@ export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
           Optimizer
         </label>
         <div className="grid grid-cols-2 gap-2">
-          {optimizers.map((opt) => {
+          {OPTIMIZERS.map((opt) => {
             const colors = OPTIMIZER_COLORS[opt.value];
             const isSelected = optimizer === opt.value;
             return (
@@ -100,7 +101,7 @@ export const OptimizerPanel: React.FC<OptimizerPanelProps> = ({
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-text-secondary">Batch Size</label>
         <div className="grid grid-cols-4 gap-2">
-          {[8, 16, 32, 64, 128, 256, 512].map((batch) => (
+          {BATCH_SIZES.map((batch) => (
             <button
               key={batch}
               type="button"
