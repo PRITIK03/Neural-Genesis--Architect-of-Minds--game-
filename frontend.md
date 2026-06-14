@@ -108,7 +108,7 @@ We’ll use **Radix UI** primitives (Dialog, Tooltip, Tabs, Popover, etc.) style
 
 ---
 
-## Component Architecture & File Structure
+## Component Architecture and File Structure
 
 A feature‑based folder structure inside `src/`:
 
