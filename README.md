@@ -346,4 +346,4 @@ ISC License - see `package.json` for details.
 
 ---
 
-**Ready to train your brain?** Run `npm run dev` and dive into the world of neural networks! 🚀
+**Ready to train your brain?** Run `npm run dev` and dive into the world of neural networks 🚀
