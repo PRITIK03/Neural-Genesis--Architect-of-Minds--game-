@@ -1,4 +1,4 @@
-....# 🧠 NeuroPuzzle - Neural Network Puzzle Game
+# 🧠 NeuroPuzzle - Neural Network Puzzle Game
 
 **Design. Train. Optimize.** An interactive browser-based puzzle game where you build, train, and optimize neural networks to solve increasingly complex challenges. Learn machine learning concepts through hands-on gameplay with stunning 3D visualizations.
 
