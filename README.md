@@ -11,7 +11,7 @@
 
 ---
 
-## 📖 Table of Content..s 
+## 📖 Table of Content
 
 - [Overview](#overview)
 - [Features](#features)
