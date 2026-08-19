@@ -10,7 +10,6 @@
 ![License](https://img.shields.io/badge/license-ISC-green)
 
 ---
-
 ## 📖 Table of Content
 
 - [Overview](#overview)
