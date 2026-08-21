@@ -343,6 +343,6 @@ ISC License - see `package.json` for details.
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/neuropuzzle/discussions)
 - **Email**: support@neuropuzzle.game
 
----
+--
 
 **Ready to train your brain?** Run `npm run dev` and dive into the world of neural networks. 🚀
